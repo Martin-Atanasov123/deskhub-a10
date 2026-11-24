@@ -1,0 +1,12 @@
+This project is a derivative of Desk Hub (https://github.com/zacharyinserra/deskhub),
+Copyright (c) 2026 Desk Hub contributors, used under the MIT License (see LICENSE).
+
+Additions in this repository (companion/deskhub/web_server.py, companion/deskhub/web/*.html|css|js,
+companion/tests/test_web.py and the changes described in README.md) are also released under the MIT License.
+
+Third-party files shipped unmodified:
+  companion/deskhub/web/fonts/MaterialIcons-Regular.ttf  Apache License 2.0
+    (google/material-design-icons; licence text: companion/deskhub/web/fonts/LICENSE-MaterialIcons.txt)
+  companion/deskhub/web/fonts/Inter-Medium.ttf, Inter-SemiBold.ttf  SIL Open Font License 1.1
+    (rsms/inter; licence text: companion/deskhub/web/fonts/OFL-Inter.txt)
+  firmware/main/icons.h (icon names, read by the shortcut setup tool)  MIT, from Desk Hub

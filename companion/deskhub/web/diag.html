@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>DeskHub diagnostics</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  html, body { margin: 0; background: #0f1218; color: #e6e9ef; font: 14px/1.4 sans-serif; }
+  body { padding: 10px 14px 30px; max-width: 960px; }
+  h1 { font-size: 18px; margin: 0 0 4px; } h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: #8b95a7; margin: 18px 0 6px; }
+  table { border-collapse: collapse; width: 100%; }
+  td, th { padding: 4px 8px; border-bottom: 1px solid #232a36; text-align: left; vertical-align: top; word-break: break-word; }
+  th { color: #8b95a7; font-weight: 500; }
+  .warn { color: #fbbf24; } .error { color: #f87171; } .info { color: #cbd5e1; } .ok { color: #4ade80; } .muted { color: #8b95a7; }
+  a { color: #7fb0ff; }
+</style>
+</head>
+<body>
+<h1>DeskHub diagnostics</h1>
+<div class="muted" id="state">Loading...</div>
+<div><a href="/">Dashboard</a> &nbsp; <a href="/compat">Compatibility test</a> &nbsp; <a href="/setup">Pair a phone (on the PC only)</a></div>
+<h2>Server</h2><table id="server"></table>
+<h2>Connected displays</h2><table id="clients"></table>
+<h2>Compatibility reports</h2><div id="reports"></div>
+<h2>Log (newest first)</h2><table id="log"></table>
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  function td(t, cls) { var c = document.createElement('td'); c.textContent = t; if (cls) { c.className = cls; } return c; }
+  function row(cells) { var r = document.createElement('tr'); cells.forEach(function (c) { r.appendChild(c); }); return r; }
+  function clear(n) { while (n.firstChild) { n.removeChild(n.firstChild); } }
+  function token() { try { return localStorage.getItem('dh_token') || ''; } catch (e) { return ''; } }
+  function ago(s) { return s < 90 ? s + ' s' : Math.round(s / 60) + ' min'; }
+
+  function render(d) {
+    var s = d.server, t = $('server'); clear(t);
+    [['version', s.version], ['uptime', ago(s.uptime_s)], ['port', s.port], ['PC addresses', (s.addresses || []).join(', ') || 'none found'], ['python', s.python]]
+      .forEach(function (kv) { t.appendChild(row([td(kv[0], 'muted'), td(kv[1])])); });
+    var c = $('clients'); clear(c);
+    if (!d.clients.length) { c.appendChild(row([td('No display connected right now. A phone that is paused or asleep disconnects on purpose.', 'warn')])); }
+    d.clients.forEach(function (k) {
+      var info = []; for (var key in k.info) { if (k.info.hasOwnProperty(key)) { info.push(key + ': ' + k.info[key]); } }
+      c.appendChild(row([td(k.ip, 'ok'), td(k.mode + ' power'), td('up ' + ago(k.connected_s)), td('last data from phone ' + ago(k.last_rx_s) + ' ago'),
+                         td(k.tx + ' sent / ' + k.rx + ' received'), td(info.join(' · ')), td(k.ua, 'muted')]));
+    });
+    var r = $('reports'); clear(r);
+    var ips = Object.keys(d.reports || {});
+    if (!ips.length) { r.appendChild(document.createTextNode('None yet. Open /compat on the phone.')); }
+    ips.forEach(function (ip) {
+      var rep = d.reports[ip], tb = document.createElement('table');
+      tb.appendChild(row([td('From ' + ip, 'ok'), td(new Date(rep._received * 1000).toLocaleTimeString(), 'muted')]));
+      ['android', 'model', 'chrome', 'samsung', 'viewport', 'screen', 'dpr', 'cpuLoopMs', 'canvasFps', 'secondsOnPage'].forEach(function (k) {
+        if (rep[k] !== undefined) { tb.appendChild(row([td(k, 'muted'), td(String(rep[k]))])); }
+      });
+      if (rep.websocket) { tb.appendChild(row([td('websocket', 'muted'), td(JSON.stringify(rep.websocket))])); }
+      if (rep.screenEvents) { tb.appendChild(row([td('screen events', 'muted'), td(rep.screenEvents.length ? rep.screenEvents.join(' | ') : 'none')])); }
+      var no = []; for (var k2 in rep) { if (rep.hasOwnProperty(k2) && rep[k2] === 'NO') { no.push(k2); } }
+      tb.appendChild(row([td('missing features', 'muted'), td(no.length ? no.join(', ') : 'none', no.length ? 'warn' : 'ok')]));
+      r.appendChild(tb);
+    });
+    var l = $('log'); clear(l);
+    d.log.slice().reverse().forEach(function (e) {
+      l.appendChild(row([td(new Date(e.t * 1000).toLocaleTimeString(), 'muted'), td(e.ip, 'muted'), td(e.level, e.level),
+                         td(e.msg + (e.authed ? '' : '   (not paired)'), e.level)]));
+    });
+  }
+
+  function poll() {
+    if (document.hidden) { return; }
+    var x = new XMLHttpRequest();
+    x.open('GET', '/api/diag');
+    if (token()) { x.setRequestHeader('X-Token', token()); }
+    x.onload = function () {
+      if (x.status === 200) { $('state').textContent = 'Updated ' + new Date().toLocaleTimeString() + ' (refreshes every 3 s)'; render(JSON.parse(x.responseText)); }
+      else { $('state').textContent = 'The PC refused (' + x.status + '). Open this page on the PC, or on a phone that is paired.'; $('state').className = 'error'; }
+    };
+    x.onerror = function () { $('state').textContent = 'Cannot reach the PC.'; $('state').className = 'error'; };
+    x.send();
+  }
+  poll(); setInterval(poll, 3000);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,293 @@
+# Copy to config.toml and edit.
+
+# Browser display (the phone). On by default; nothing else to configure.
+# On start the companion prints a QR code and an address to open on the phone.
+[web]
+# enabled = true
+# port = 8787
+# host = "0.0.0.0"     # which network card to listen on; "127.0.0.1" = this PC only
+# token = ""           # leave empty: a random pairing code is kept in ~/.deskhub/web_token
+
+# Weather page. Off until you set a place. The PC asks open-meteo.com (free, no account) for the
+# forecast and sends it to the phone; the place name or coordinates go to open-meteo.com.
+# [weather]
+# city = "London"          # "City" or "City, Region"; looked up once and remembered
+# latitude = 51.51         # or use coordinates instead of city
+# longitude = -0.13
+# name = "Home"            # label on the page
+# units = "metric"         # or "imperial"
+
+# Only for the original ESP32 board. Leave this section out when you use the phone.
+# [hub]
+# The hub's mDNS name (CONFIG_HUB_HOSTNAME + ".local") or its IP address.
+# host = "deskhub.local"
+# Must match "Companion token" in the firmware's menuconfig.
+# token = "change-me"
+
+[calendar]
+# How many days ahead to show.
+days = 7
+# Easiest: run `uv run deskhub-calendars` to add Google or Apple calendars interactively.
+#
+# ICS feeds. Google Calendar: Settings > your calendar > "Secret address in iCal format".
+# Outlook.com: Settings > Calendar > Shared calendars > Publish a calendar > ICS link.
+# Local .ics files work too (path instead of URL).
+[[calendar.feeds]]
+name = "Personal"
+url = ""
+color = "#7c9cff"
+
+# [[calendar.feeds]]
+# name = "Work"
+# url = "https://outlook.office365.com/owa/calendar/.../calendar.ics"
+# color = "#f5a524"
+
+# Google Calendar (secret iCal address; webcal:// links work too).
+# [[calendar.feeds]]
+# name = "Google"
+# url = "https://calendar.google.com/calendar/ical/.../private-.../basic.ics"
+# color = "#4285f4"
+
+# Apple iCloud over CalDAV (works with private calendars). Needs an app-specific
+# password from account.apple.com > Sign-In and Security > App-Specific Passwords.
+# Store it with `uv run deskhub-calendars` (add-apple); it lives in the OS credential
+# store (service "deskhub-caldav", keyed by username), never in this file.
+# `calendars` filters by display name; leave it out for all calendars.
+# [[calendar.feeds]]
+# type = "caldav"
+# name = "iCloud"
+# url = "https://caldav.icloud.com/"
+# username = "you@icloud.com"
+# calendars = ["Home", "Work"]
+# color = "#ff5a5f"
+
+[home]
+# The time and date sit in a slim bar across the top (header = true, the default).
+# Set header = false and place "clock" for the big clock widget instead.
+header = true
+# Home is a grid of 5 columns by 3 rows. Place each widget at cell x (0-4 across)
+# and y (0-2 down), w cells wide and h tall. Sizes each widget comes in:
+#   weather, net, claude, stats: 1-5 wide x 1      clock: 2-5 wide x 1-2
+#   media, printer, game: 2-5 wide x 1            events: 2-5 wide x 1-3
+#   github: 2-5 wide x 1-2 (needs a token: `uv run deskhub-setup github`)
+# Overlapping or off-grid widgets are left out, as are widgets for hidden pages.
+# `uv run deskhub-setup` (Home screen step) can place them for you.
+grid = [
+  { widget = "claude",  x = 0, y = 0, w = 3, h = 1 },
+  { widget = "events",  x = 0, y = 1, w = 3, h = 2 },
+  { widget = "weather", x = 3, y = 0, w = 2, h = 1 },
+  { widget = "media",   x = 3, y = 1, w = 2, h = 1 },
+  { widget = "stats",   x = 3, y = 2, w = 2, h = 1 },
+]
+
+# The GitHub contribution chart (the "github" Home widget). The token lives in the
+# Windows credential store; add it with `uv run deskhub-setup github`.
+# [github]
+# enabled = true
+# colors = "green"   # or "accent" for shades of the board's amber
+
+[steam]
+# Show the game you are playing and your recent Steam games, and launch them from the
+# board. Reads Steam's local files; needs Steam installed. The "games" page turns on by
+# itself when Steam is found.
+enabled = true
+
+# Popular non-Steam games (League of Legends, Teamfight Tactics, VALORANT, Fortnite,
+# Minecraft, Roblox, Battle.net games and more) are recognised without any setup.
+# [game_presets]
+# enabled = true
+# disabled = ["Roblox"]
+#
+# Other games that aren't on Steam show on the Games page too: one [[games]] block each
+# (uncomment and edit). The companion watches for the process, counts the session,
+# remembers when you last played, and the board can start it with `launch`.
+#   name    - shown on the board
+#   process - the program's file name, or a list of them (Task Manager > Details)
+#   match   - optional: text its command line must contain (for javaw.exe and the like)
+#   title   - optional: text a window title must contain; with title, process is optional
+#             and only limits which programs' windows count
+#   image   - optional: a picture file or https URL, cropped to fit (else a placeholder)
+#   launch  - optional: a program, shortcut, folder or URL to open from the board
+#
+# [[games]]
+# name = "Minecraft"
+# process = "javaw.exe"
+# match = "minecraft"
+# image = "C:/Users/you/Pictures/minecraft.png"
+# launch = "C:/XboxGames/Minecraft Launcher/Content/Minecraft.exe"
+#
+# [[games]]
+# name = "GT: New Horizons"
+# title = "GT: New Horizons"
+# process = ["java.exe", "javaw.exe"]
+#
+# [[games]]
+# name = "Minecraft Bedrock"
+# process = "Minecraft.Windows.exe"
+# launch = "minecraft://"
+
+[internet]
+# Connection stats for the Internet page: latency (a TCP connect to 1.1.1.1:443),
+# jitter, packet loss, uptime and data used today and this month.
+enabled = true
+# Run a speed test (about 35 MB through speed.cloudflare.com) every this many hours.
+# 0 = only when you tap the button on the board.
+speedtest_hours = 0
+# Show your public IP address (asked from speed.cloudflare.com every 30 minutes).
+show_ip = false
+
+[ai]
+# Which coding agent the AI page shows: "auto", "claude" or "codex". "auto" picks
+# whichever you used most recently (Claude Code if neither has been used).
+agent = "auto"
+
+[claude]
+# Opt-in: fetch your current 5-hour and weekly limits from Anthropic every minute,
+# using the sign-in Claude Code saved on this PC. Uses no tokens or API credits.
+# The endpoint is undocumented and may change. See README > Claude Code usage.
+live_limits = false
+# Full-screen alert on the board when a Claude Code session needs a permission or is
+# waiting for your reply. Needs the hooks: `uv run python install_claude.py hooks`.
+alerts = true
+# A session that finished its turn alerts once it has waited this many seconds.
+idle_alert_seconds = 30
+
+# Shortcut tiles, in order. Up to 16. Pick 2/4/6/8/12/16 for an even grid.
+#
+# action:
+#   keys   - press a key combination, e.g. "ctrl+shift+m", "win+shift+s", "f13"
+#   run    - run a program or command, e.g. "notepad.exe", "code C:\\Code\\project"
+#   open   - open a file, folder or URL with its default app
+#   media  - "toggle", "next", "prev"
+#   volume - "up", "down", "mute"
+#   lock   - lock the PC
+#   mic    - mute or unmute the default microphone in Windows (no target)
+#
+# state (optional): light the tile up on the board while it is on. "mic_mute" or
+#   "speaker_mute". Guessed when left out: the volume "mute" tile shows speaker_mute,
+#   mic tiles and tiles with a mic icon show mic_mute. state = "" turns it off.
+#
+# icon: one of home insights memory speed music_note event calendar_today wb_sunny cloud
+#   grid_view apps wifi computer desktop_windows play_arrow pause skip_next skip_previous
+#   volume_up volume_down volume_off mic mic_off lock photo_camera screenshot_monitor
+#   terminal code public folder keyboard power_settings_new schedule timer mail chat
+#   sports_esports rocket_launch bolt star favorite settings refresh dark_mode headphones
+#   videocam movie developer_board lan shuffle repeat
+
+[[tiles]]
+label = "Mute mic"
+icon = "mic_off"
+color = "#b4413c"
+action = "mic"
+target = ""
+
+[[tiles]]
+label = "Mute sound"
+icon = "volume_off"
+color = "#3a4256"
+action = "volume"
+target = "mute"
+
+[[tiles]]
+label = "Vol -"
+icon = "volume_down"
+color = "#3a4256"
+action = "volume"
+target = "down"
+
+[[tiles]]
+label = "Vol +"
+icon = "volume_up"
+color = "#3a4256"
+action = "volume"
+target = "up"
+
+[[tiles]]
+label = "Screenshot"
+icon = "screenshot_monitor"
+color = "#2f6f5e"
+action = "keys"
+target = "win+shift+s"
+
+[[tiles]]
+label = "Terminal"
+icon = "terminal"
+color = "#2b2f3a"
+action = "run"
+target = "wt.exe"
+
+[[tiles]]
+label = "Downloads"
+icon = "folder"
+color = "#8a6d1f"
+action = "open"
+target = "~/Downloads"
+
+[[tiles]]
+label = "Lock PC"
+icon = "lock"
+color = "#5b3fa0"
+action = "lock"
+target = ""
+
+[pages]
+# Where the navigation bar goes: "left" (default), "right" or "bottom". The board
+# restarts once when this changes, to lay its pages out for the new space.
+# nav = "left"
+# Home is always shown. Remove names to hide pages; the navigation bar follows this
+# order. Without this block every page except "printer" and "games" is shown;
+# "printer" is added by itself once a printer is configured and "games" when Steam is
+# installed. Add "github" for the GitHub page.
+enabled = ["home", "stats", "ai", "calendar", "weather", "media", "printer", "timer", "games", "network", "shortcuts"]
+
+[display]
+# What the board does while the PC's display is asleep: "off" (screen dark, the
+# default), "clock" (a dim clock screensaver) or "none" (stay as it is). A touch
+# brings the board back for a minute.
+pc_sleep = "off"
+# Night mode: dark every day between these times, with or without the PC (the
+# board keeps the schedule itself). Leave empty for no night mode.
+# night = "23:00-07:00"
+# What the board shows at night: "off" (screen dark) or "clock".
+# night_style = "off"
+
+# 3D printers, up to 4 in any mix. Easiest: run `uv run deskhub-printers` and pick the
+# brand. Passwords, API keys, access codes and tokens live in the OS credential store
+# (service "deskhub-bambu" for Bambu, "deskhub-printers" for the rest), never in this file.
+# The README lists the models each `type` covers.
+#
+# Over your home network (needs LAN Only Mode or Developer Mode on the printer):
+# [[printers]]
+# name = "P1S"
+# type = "local"
+# serial = "01P00A000000000"
+# host = "192.168.1.60"
+#
+# Through your Bambu account (region "us", or "cn" for China accounts):
+# [[printers]]
+# name = "A1 mini"
+# type = "cloud"
+# serial = "030000000000000"
+# account = "you@example.com"
+# region = "us"
+#
+# Klipper printers through Moonraker (Voron, Sovol SV08, Qidi, Creality K1/K2 with
+# Moonraker...). An API key, if your setup needs one, goes in the credential store
+# (service "deskhub-printers"); most don't need one.
+# [[printers]]
+# name = "Voron"
+# type = "moonraker"
+# host = "192.168.1.70"
+# port = 7125
+# model = "Voron 2.4"
+#
+# Other types (same host / port / model keys; port defaults shown):
+#   type = "prusalink"   port 80, plus user = "maker"; password in the credential store
+#   type = "octoprint"   port 80; API key in the credential store
+#   type = "flashforge"  port 8898, plus serial = "SN..."; check code in the credential store
+#                        (no serial: older printers over the G-code port 8899)
+#   type = "elegoo"      Centauri Carbon, port 3030, nothing else
+#   type = "snapmaker"   Snapmaker 2.0, port 8080; token in the credential store
+#   type = "snapmaker-sacp"  J1, J1s, Artisan, port 8888; token in the credential store
+#   type = "anycubic"    LAN Mode, port 18910, nothing else
+#   type = "creality"    K1, K2, Hi, Ender-3 V3 on stock firmware, port 9999, nothing else

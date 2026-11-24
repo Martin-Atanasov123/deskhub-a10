@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>DeskHub compatibility test</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  @font-face { font-family: 'Material Icons'; src: url(fonts/MaterialIcons-Regular.ttf) format('truetype'); }
+  html, body { margin: 0; background: #0f1218; color: #e6e9ef; font: 14px/1.4 sans-serif; }
+  body { padding: 10px 14px 30px; }
+  h1 { font-size: 16px; margin: 0 0 6px; }
+  button { font-size: 15px; padding: 10px 14px; margin: 4px 6px 4px 0; border: 0; border-radius: 6px; background: #3b82f6; color: #fff; }
+  table { border-collapse: collapse; width: 100%; margin-top: 8px; }
+  td { padding: 3px 6px; border-bottom: 1px solid #232a36; vertical-align: top; word-break: break-word; }
+  td:first-child { color: #9aa4b5; width: 38%; }
+  .ok { color: #4ade80; } .no { color: #f87171; } .meh { color: #fbbf24; }
+  #big { font-size: 30px; font-variant-numeric: tabular-nums; }
+  a { color: #7fb0ff; }
+</style>
+</head>
+<body>
+<h1>DeskHub compatibility test</h1>
+<div>On this page for: <span id="big">0:00</span> &nbsp; <a href="/">Back to dashboard</a></div>
+<div>
+  <button id="fs">Fullscreen</button>
+  <button id="wl">Try wake lock</button>
+  <button id="send">Send results to the PC</button>
+</div>
+<div id="status">Starting...</div>
+<table id="out"></table>
+<p style="color:#9aa4b5">To test how long the screen stays on, leave this page open and untouched. Each time the screen
+turns off, the page notes it under "screen events". Wake it, then tap <b>Send results to the PC</b>.</p>
+<span id="icon" style="font-family:'Material Icons';font-size:24px;position:absolute;left:-999px">home</span>
+
+<script>
+// ES5 only on purpose: this page has to run on very old browsers to tell you they are old.
+(function () {
+  var report = {}, rows = [], cpuMs = null, fps = null, t0 = Date.now(), vis = [];
+  var ws = { opened: false, msgs: 0, first: '', maxGap: 0, last: 0, closes: 0, denied: false, authed: false, err: '' };
+  var ua = navigator.userAgent;
+  function m(re) { var r = re.exec(ua); return r ? r[1] : null; }
+  function add(k, v, cls) { report[k] = v; rows.push([k, String(v), cls || '']); }
+  function can(code) { try { new Function(code); return true; } catch (e) { return false; } }
+  function css(p, v) { return !!(window.CSS && CSS.supports && CSS.supports(p, v)); }
+  function yn(k, ok, important) { add(k, ok ? 'yes' : 'NO', ok ? 'ok' : (important ? 'no' : 'meh')); }
+  function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+  function status(t) { document.getElementById('status').textContent = t; }
+  function token() { try { return localStorage.getItem('dh_token') || ''; } catch (e) { return ''; } }
+
+  var iconOk = null;
+  try {
+    if (document.fonts && document.fonts.load) {
+      document.fonts.load('24px "Material Icons"').then(function (f) { iconOk = f.length > 0; collect(); render(); },
+                                                         function () { iconOk = false; collect(); render(); });
+    }
+  } catch (e) { iconOk = false; }
+
+  function collect() {
+    rows = []; report = {};
+    add('user agent', ua);
+    add('android', m(/Android ([\d.]+)/) || 'not Android?');
+    add('model', m(/; (SM-[A-Z0-9]+)/) || m(/; ([^;)]+) Build/) || '?');
+    add('chrome', m(/Chrome\/([\d.]+)/) || 'none');
+    add('samsung', m(/SamsungBrowser\/([\d.]+)/) || 'no');
+    add('viewport', window.innerWidth + ' x ' + window.innerHeight + ' CSS px');
+    add('screen', screen.width + ' x ' + screen.height + ' CSS px');
+    add('dpr', window.devicePixelRatio);
+    add('orientation', (screen.orientation && screen.orientation.type) || (window.innerWidth > window.innerHeight ? 'landscape' : 'portrait'));
+    add('cpu cores', navigator.hardwareConcurrency || '?');
+    add('secure context', window.isSecureContext ? 'yes' : 'no (normal over http)', 'meh');
+    add('address', location.host);
+
+    yn('WebSocket', 'WebSocket' in window, true);
+    yn('XMLHttpRequest blob (cover art)', (function () { try { var x = new XMLHttpRequest(); x.responseType = 'blob'; return x.responseType === 'blob'; } catch (e) { return false; } })(), true);
+    yn('URL.createObjectURL', !!((window.URL || window.webkitURL) && (window.URL || window.webkitURL).createObjectURL), true);
+    yn('JSON', 'JSON' in window, true);
+    yn('CSS grid', css('display', 'grid'), true);
+    yn('CSS grid-gap', css('grid-gap', '4px'), true);
+    yn('CSS custom properties', css('--a', '1'), true);
+    yn('SVG', !!document.createElementNS && !!document.createElementNS('http://www.w3.org/2000/svg', 'svg').createSVGRect, true);
+    yn('Page Visibility API', typeof document.hidden !== 'undefined', true);
+    yn('localStorage (keeps the pairing)', (function () { try { localStorage.setItem('p', '1'); return true; } catch (e) { return false; } })(), true);
+    if (iconOk !== null) { yn('icon font loads', iconOk, true); }
+    yn('JS: arrow functions + const/let', can('const f = (a) => a; let b = 1;'), false);
+    yn('JS: async/await', can('async function f(){ await 1; }'), false);
+    yn('JS: optional chaining a?.b', can('var a = {}; return a?.b;'), false);
+    yn('CSS flex gap', css('gap', '4px'), false);
+    yn('CSS aspect-ratio', css('aspect-ratio', '1 / 1'), false);
+    yn('Fullscreen API', !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen), false);
+    yn('Screen Wake Lock API', 'wakeLock' in navigator, false);
+    yn('Battery API', 'getBattery' in navigator, false);
+    if (cpuMs !== null) {
+      add('CPU loop (3M sqrt, lower is better)', cpuMs + ' ms', cpuMs > 1500 ? 'meh' : 'ok');
+      add('canvas frames per second', fps === null ? 'n/a' : fps, fps !== null && fps < 20 ? 'meh' : 'ok');
+    }
+    add('WebSocket to the PC', ws.opened ? (ws.authed ? 'works, paired, ' + ws.msgs + ' messages, longest gap ' + ws.maxGap + ' ms'
+                                                        : ws.denied ? 'works, but not paired (open the pairing address first)' : 'connected')
+                                         : 'not connected ' + ws.err, ws.opened ? 'ok' : 'no');
+    add('screen events', vis.length ? vis.join(' | ') : 'none yet (screen has stayed on)');
+    report.websocket = { opened: ws.opened, authed: ws.authed, denied: ws.denied, messages: ws.msgs, longestGapMs: ws.maxGap };
+    report.screenEvents = vis; report.secondsOnPage = Math.round((Date.now() - t0) / 1000);
+    if (cpuMs !== null) { report.cpuLoopMs = cpuMs; report.canvasFps = fps; }
+  }
+  function render() {
+    var html = '';
+    for (var i = 0; i < rows.length; i++) { html += '<tr><td>' + esc(rows[i][0]) + '</td><td class="' + rows[i][2] + '">' + esc(rows[i][1]) + '</td></tr>'; }
+    document.getElementById('out').innerHTML = html;
+  }
+
+  function cpuBench() { var t = Date.now(), x = 0; for (var i = 0; i < 3000000; i++) { x += Math.sqrt(i) % 3; } return Date.now() - t; }
+  function fpsBench(done) {
+    var raf = window.requestAnimationFrame || window.webkitRequestAnimationFrame;
+    if (!raf) { done(null); return; }
+    var c = document.createElement('canvas'); c.width = 380; c.height = 180;
+    var g = c.getContext('2d'), n = 0, s = Date.now();
+    (function tick() {
+      g.fillStyle = '#123'; g.fillRect(0, 0, 380, 180); g.fillStyle = '#4ade80'; g.fillRect((n * 7) % 340, 40, 40, 40); n++;
+      if (Date.now() - s < 2000) { raf(tick); } else { done(Math.round(n / 2)); }
+    })();
+  }
+
+  function connectWs() {
+    if (!('WebSocket' in window)) { return; }
+    var s;
+    try { s = new WebSocket('ws://' + location.host + '/ws'); } catch (e) { ws.err = String(e); return; }
+    s.onopen = function () { ws.opened = true; ws.last = Date.now(); s.send(JSON.stringify({ type: 'hello', token: token(), mode: 'normal' })); };
+    s.onmessage = function (ev) {
+      var now = Date.now(); if (ws.last && now - ws.last > ws.maxGap) { ws.maxGap = now - ws.last; } ws.last = now; ws.msgs++;
+      try { var d = JSON.parse(ev.data); if (!ws.first) { ws.first = d.type; } if (d.type === 'hello_ok') { ws.authed = true; } if (d.type === 'hello_denied') { ws.denied = true; } } catch (e) { /* ignore */ }
+    };
+    s.onclose = function () { ws.closes++; if (!ws.denied) { setTimeout(connectWs, 3000); } };
+    s.onerror = function () { ws.err = '(error)'; };
+  }
+
+  document.addEventListener('visibilitychange', function () {
+    vis.push((document.hidden ? 'screen off/hidden' : 'back') + ' after ' + Math.round((Date.now() - t0) / 1000) + ' s');
+  });
+
+  function post() {
+    collect();
+    var x = new XMLHttpRequest();
+    x.open('POST', '/api/report'); x.setRequestHeader('Content-Type', 'application/json');
+    x.onload = function () { status(x.status === 200 ? 'Results sent to the PC (see its Diagnostics page).' : 'The PC answered ' + x.status); };
+    x.onerror = function () { status('Could not reach the PC to send the results.'); };
+    x.send(JSON.stringify(report));
+  }
+
+  setInterval(function () {
+    var s = Math.round((Date.now() - t0) / 1000);
+    document.getElementById('big').textContent = Math.floor(s / 60) + ':' + (s % 60 < 10 ? '0' : '') + (s % 60);
+    if (s % 5 === 0) { collect(); render(); }
+  }, 1000);
+  document.getElementById('fs').onclick = function () { var e = document.documentElement; (e.requestFullscreen || e.webkitRequestFullscreen || function () {}).call(e); };
+  document.getElementById('wl').onclick = function () {
+    if (!navigator.wakeLock) { status('Wake lock is not available here (normal over plain http).'); return; }
+    navigator.wakeLock.request('screen').then(function () { status('Wake lock granted'); }, function (e) { status('Wake lock refused: ' + e); });
+  };
+  document.getElementById('send').onclick = post;
+
+  collect(); render(); connectWs(); status('Measuring (about 3 s)...');
+  setTimeout(function () {
+    cpuMs = cpuBench();
+    fpsBench(function (f) { fps = f; collect(); render(); status('Done. Sending results to the PC in a few seconds...'); setTimeout(post, 5000); });
+  }, 300);
+  window.addEventListener('resize', function () { collect(); render(); });
+})();
+</script>
+</body>
+</html>

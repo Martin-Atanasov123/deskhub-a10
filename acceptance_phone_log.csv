@@ -1,0 +1,18 @@
+time,phone_connected,mode,page,visible,reconnects,page_heap_mb,page_up_s,page_msgs,battery_pct,charging,temp_c,voltage_mv,chrome_pss_mb,chrome_cpu_pct,companion_cpu_pct,companion_rss_mb
+22:52:40,yes,low,keys,True,0,9.5,241,130,45,discharging,27.5,3750,116,8.3,10.50,121
+22:53:41,yes,low,keys,True,0,9.5,301,171,44,discharging,27.4,3750,116,2.1,2.40,122
+22:54:42,yes,low,keys,True,0,9.5,361,211,44,discharging,27.3,3721,116,2.1,2.20,122
+22:55:43,yes,low,keys,True,0,9.5,421,251,44,discharging,27.5,3718,116,2.1,1.30,123
+22:56:44,yes,low,timer,True,0,9.5,481,290,44,discharging,27.5,3715,117,13.5,1.40,123
+22:57:45,companion unreachable,,,,,,,,44,discharging,27.6,3700,117,13.5,,
+22:58:48,yes,low,timer,True,4,9.5,569,310,44,discharging,27.6,3702,117,13.5,0.00,0
+22:59:49,yes,low,timer,True,4,9.5,629,341,44,discharging,27.7,3714,117,13.5,0.00,0
+23:00:50,yes,low,timer,True,4,9.5,689,362,44,discharging,27.7,3729,117,13.5,0.00,0
+23:01:51,yes,low,timer,True,4,9.5,749,394,43,discharging,27.6,3701,117,8.8,0.00,0
+23:02:52,yes,low,timer,True,4,9.5,809,433,43,discharging,27.5,3720,112,8.8,0.00,0
+23:03:53,NO,,,,,,,,43,discharging,27.5,3709,102,8.8,0.00,0
+23:04:54,NO,,,,,,,,43,discharging,27.2,3766,102,8.8,0.00,0
+23:05:55,NO,,,,,,,,43,discharging,27.1,3782,102,6.9,0.00,0
+23:06:57,NO,,,,,,,,43,discharging,26.9,3785,102,1.2,0.00,0
+23:07:58,NO,,,,,,,,43,discharging,26.8,3781,102,1.2,0.00,0
+23:09:00,NO,,,,,,,,43,discharging,26.7,3788,102,1.2,0.00,0

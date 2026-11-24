@@ -1,0 +1,18 @@
+# Python / environment
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Personal config and secrets (copy companion/config.example.toml to config.toml)
+companion/config.toml
+companion/dev*.toml
+.deskhub/
+web_token
+*.token
+
+# Local test output and scratch
+*.output
+*.log
+phone*.png
+ph*_*.png

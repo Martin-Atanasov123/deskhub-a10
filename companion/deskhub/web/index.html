@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>DeskHub</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#080b0c">
+<link rel="stylesheet" href="app.css">
+</head>
+<body data-nav="left" class="motion-full">
+<div id="app">
+  <nav id="nav">
+    <div id="navbtns"><div id="pill"></div></div>
+    <div id="link" class="connecting"><span class="mi">desktop_windows</span><span class="mi">wifi</span></div>
+  </nav>
+  <main id="stage"></main>
+
+  <div id="toast"><span class="spin"></span><span id="toast-text">Connecting</span></div>
+
+  <div id="alertcard">
+    <div class="logo-tile" id="alert-logo"></div>
+    <div class="grow"><div class="cap" id="alert-project" style="color:var(--amber);letter-spacing:.04em;text-transform:none;font-size:.78rem"></div>
+      <div id="alert-title" class="ell" style="font-size:1rem;font-weight:500"></div></div>
+    <button class="cbtn" id="alert-dismiss" aria-label="Dismiss"><span class="mi">close</span></button>
+    <button class="cbtn amber" id="alert-focus" aria-label="Show on the PC"><span class="mi">open_in_new</span></button>
+  </div>
+
+  <div id="pair" class="overlay">
+    <div class="box">
+      <h2>Pair with your PC</h2>
+      <p id="pair-text">On the PC, open <b>http://localhost:8790/setup</b> and scan the code with this phone's camera,
+        or type the pairing code below.</p>
+      <input id="pair-code" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="pairing code">
+      <button id="pair-go" class="btn">Connect</button>
+      <p><a href="compat">Compatibility test</a></p>
+    </div>
+  </div>
+  <div id="sleep" class="overlay"><div id="sleep-clock"></div></div>
+  <div id="boot"><div class="boot-ring"></div><div class="boot-word">DESKHUB</div><div class="boot-text" id="boot-text">Connecting to your PC</div></div>
+  <div id="dim"></div>
+</div>
+<script src="ui.js"></script>
+<script src="app.js"></script>
+<script src="pages.js"></script>
+<script src="devices.js"></script>
+<script src="homeedit.js"></script>
+<script>if (/[?&]demo=1/.test(location.search)) { document.write('<script src="demo.js"><\/script>'); }</script>
+<script>DH.start();</script>
+</body>
+</html>

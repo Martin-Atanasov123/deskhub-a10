@@ -1,0 +1,17 @@
+time=22:52:40 | phone_connected=yes | mode=low | visible=True | page_heap_mb=9.5 | battery_pct=45 | charging=discharging | chrome_pss_mb=116 | companion_cpu_pct=10.50
+time=22:53:41 | phone_connected=yes | mode=low | visible=True | page_heap_mb=9.5 | battery_pct=44 | charging=discharging | chrome_pss_mb=116 | companion_cpu_pct=2.40
+time=22:54:42 | phone_connected=yes | mode=low | visible=True | page_heap_mb=9.5 | battery_pct=44 | charging=discharging | chrome_pss_mb=116 | companion_cpu_pct=2.20
+time=22:55:43 | phone_connected=yes | mode=low | visible=True | page_heap_mb=9.5 | battery_pct=44 | charging=discharging | chrome_pss_mb=116 | companion_cpu_pct=1.30
+time=22:56:44 | phone_connected=yes | mode=low | visible=True | page_heap_mb=9.5 | battery_pct=44 | charging=discharging | chrome_pss_mb=117 | companion_cpu_pct=1.40
+time=22:57:45 | phone_connected=companion unreachable | battery_pct=44 | charging=discharging | chrome_pss_mb=117
+time=22:58:48 | phone_connected=yes | mode=low | visible=True | page_heap_mb=9.5 | battery_pct=44 | charging=discharging | chrome_pss_mb=117 | companion_cpu_pct=0.00
+time=22:59:49 | phone_connected=yes | mode=low | visible=True | page_heap_mb=9.5 | battery_pct=44 | charging=discharging | chrome_pss_mb=117 | companion_cpu_pct=0.00
+time=23:00:50 | phone_connected=yes | mode=low | visible=True | page_heap_mb=9.5 | battery_pct=44 | charging=discharging | chrome_pss_mb=117 | companion_cpu_pct=0.00
+time=23:01:51 | phone_connected=yes | mode=low | visible=True | page_heap_mb=9.5 | battery_pct=43 | charging=discharging | chrome_pss_mb=117 | companion_cpu_pct=0.00
+time=23:02:52 | phone_connected=yes | mode=low | visible=True | page_heap_mb=9.5 | battery_pct=43 | charging=discharging | chrome_pss_mb=112 | companion_cpu_pct=0.00
+time=23:03:53 | phone_connected=NO | battery_pct=43 | charging=discharging | chrome_pss_mb=102 | companion_cpu_pct=0.00
+time=23:04:54 | phone_connected=NO | battery_pct=43 | charging=discharging | chrome_pss_mb=102 | companion_cpu_pct=0.00
+time=23:05:55 | phone_connected=NO | battery_pct=43 | charging=discharging | chrome_pss_mb=102 | companion_cpu_pct=0.00
+time=23:06:57 | phone_connected=NO | battery_pct=43 | charging=discharging | chrome_pss_mb=102 | companion_cpu_pct=0.00
+time=23:07:58 | phone_connected=NO | battery_pct=43 | charging=discharging | chrome_pss_mb=102 | companion_cpu_pct=0.00
+time=23:09:00 | phone_connected=NO | battery_pct=43 | charging=discharging | chrome_pss_mb=102 | companion_cpu_pct=0.00
