@@ -34,7 +34,7 @@
   function weather() {
     var hours = [], days = [], i; for (i = 0; i < 24; i++) { hours.push({ t: now + i * 3600, code: i < 6 ? 1 : i < 12 ? 2 : i < 16 ? 61 : 3, temp: Math.round(14 + 8 * Math.sin((i - 8) / 24 * 6.28)) }); }
     var codes = [2, 61, 3, 0, 1, 95]; for (i = 0; i < 6; i++) { days.push({ t: now + i * 86400, code: codes[i], hi: 22 - i, lo: 11 + (i % 3), precip: codes[i] === 61 || codes[i] === 95 ? 60 : 5 }); }
-    return { type: 'weather', place: 'Pleven', fetched: now - 600, code: 2, is_day: true, temp: 19, feels: 18, humidity: 54, wind: 11, wind_unit: 'km/h', hours: hours, days: days };
+    return { type: 'weather', place: 'Sample City', fetched: now - 600, code: 2, is_day: true, temp: 19, feels: 18, humidity: 54, wind: 11, wind_unit: 'km/h', hours: hours, days: days };
   }
   function media() { return { type: 'media', active: true, playing: true, title: 'Midnight City', artist: 'M83', album: "Hurry Up, We're Dreaming", source: 'Spotify', pos: 74, dur: 243, can_seek: true, art_id: 1 }; }
   function printer() {

@@ -1,7 +1,7 @@
 """Log the phone's battery and the dashboard's health over time, wirelessly (no USB).
 
     cd companion
-    uv run python ..\\tools\\phone_monitor.py --minutes 60 --adb 192.168.1.42:40967 --out ..\\phone_log.csv
+    uv run python ..\\tools\\phone_monitor.py --minutes 60 --adb PHONE_IP:PORT --out ..\\phone_log.csv
 
 Each minute it writes one CSV row with:
   * from the PC: is the phone connected, its power mode, which page is open, whether the page is visible,
@@ -69,7 +69,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--minutes", type=float, default=60)
     ap.add_argument("--interval", type=float, default=60, help="seconds between rows")
-    ap.add_argument("--adb", help="the phone's Wireless debugging address, e.g. 192.168.1.42:40967 (optional)")
+    ap.add_argument("--adb", help="the phone's Wireless debugging address, e.g. PHONE_IP:PORT (optional)")
     ap.add_argument("--port", type=int, default=8790)
     ap.add_argument("--out", default="phone_log.csv")
     a = ap.parse_args()

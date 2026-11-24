@@ -1,7 +1,21 @@
 # DeskHub for the Galaxy A10 (browser display)
 
-A fork of the Windows companion from [zacharyinserra/deskhub](https://github.com/zacharyinserra/deskhub) (MIT) that
-shows the dashboard in a **phone browser over Wi-Fi** instead of on the ESP32 board. No cable, no app, no root.
+> **Where this comes from.** This is a fork of **[zacharyinserra/deskhub](https://github.com/zacharyinserra/deskhub)** (MIT), the original Desk Hub project for an ESP32 display board. The Windows companion, the look of the cards and the idea are theirs; this fork adds a browser display for an old Android phone (web server, pairing, power saving, the redesigned UI, the Home editor, the watcher and the tests). The original is not modified or bundled. See [NOTICE](NOTICE) and [LICENSE](LICENSE), and *What changed from upstream* at the bottom.
+>
+> **Where to get this fork:** https://github.com/Martin-Atanasov123/deskhub-a10
+
+## Get it
+
+```powershell
+git clone https://github.com/Martin-Atanasov123/deskhub-a10.git
+cd deskhub-a10\companion
+copy config.example.toml config.toml
+uv run python -m deskhub
+```
+
+You need Windows, [uv](https://docs.astral.sh/uv/) and a phone with a browser on the same Wi-Fi. No cable, app or root. Prefer the original ESP32 board version? Get it from the [upstream repository](https://github.com/zacharyinserra/deskhub).
+
+It shows the dashboard in a **phone browser over Wi-Fi** instead of on the ESP32 board. No cable, no app, no root.
 
 Pages: **Home** (your configured grid: stats, now playing, up next, weather, AI usage, internet), **Stats**,
 **AI** (plan limits, tokens, 7-day chart), **Calendar**, **Weather** (now, 24 hours, 6 days), **Media** (cover, seek, controls),

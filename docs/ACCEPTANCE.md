@@ -91,11 +91,11 @@ Do these in order. Total about 40 minutes plus the battery runs. All steps use o
    ```powershell
    Get-Content "$env:USERPROFILE\.deskhub\companion.log" -Wait -Tail 0
    ```
-   You will see lines like `[web 192.168.1.42] connected (low power)` and `disconnected after 183 s`, each with a time.
+   You will see lines like `[web 192.168.1.50] connected (low power)` and `disconnected after 183 s`, each with a time.
 3. In a second PowerShell window, start the monitor (60 minutes; replace the address):
    ```powershell
-   cd "C:\Users\atana\Music\DAILY THINNGS\deskhub-a10\companion"
-   uv run python ..\tools\phone_monitor.py --minutes 60 --adb 192.168.1.42:40967 --out ..\phone_log.csv
+   cd <where you cloned it>\deskhub-a10\companion
+   uv run python ..\tools\phone_monitor.py --minutes 60 --adb PHONE_IP:PORT --out ..\phone_log.csv
    ```
 4. On the phone open the dashboard and leave it in the mode you are testing (Settings → Power).
 
