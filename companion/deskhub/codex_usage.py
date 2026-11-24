@@ -61,7 +61,8 @@ def _limits_from(rate_limits: dict, ts: float) -> dict:
 
 
 class CodexUsage:
-    def __init__(self, home: pathlib.Path | None = None):
+    def __init__(self, home: pathlib.Path | None = None, live=None):
+        self.live = live  # optional codex_live.CodexLiveLimits
         self.home = home or codex_home()
         self._offsets: dict[pathlib.Path, int] = {}
         self._models: dict[pathlib.Path, str] = {}
@@ -166,8 +167,13 @@ class CodexUsage:
                 last_hour += total
 
         last = self._entries[-1][0] if self._entries else None
+        limits = _limits_from(self._rate_limits, self._limit_ts) if self._rate_limits else {}
+        if self.live is not None:   # live readings win when they are newer than the session logs
+            live = self.live.get(active=last is not None and now - last < dt.timedelta(minutes=15))
+            if live and live.get("updated", 0) >= limits.get("updated", 0):
+                limits = live
         return {
-            "limits": _limits_from(self._rate_limits, self._limit_ts) if self._rate_limits else {},
+            "limits": limits,
             "type": "codex",
             "today": today,
             "block": {"active": False},

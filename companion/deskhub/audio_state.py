@@ -104,6 +104,138 @@ def toggle_mic() -> bool | None:
     return not now
 
 
+# ---------------------------------------------------------------- playback devices (switch the default output)
+CLSID_PolicyConfigClient = "{870AF99C-171D-4F9E-AF0D-E63DF40C2BC9}"
+IID_IPolicyConfig = "{F8679F50-850A-41CF-9C72-430F290290C8}"
+_ENUM_ENUM_ENDPOINTS = 3   # IMMDeviceEnumerator::EnumAudioEndpoints
+_COLL_COUNT, _COLL_ITEM = 3, 4
+_DEVICE_OPEN_PROPS, _DEVICE_GET_ID = 4, 5
+_PROPS_GET_VALUE = 5       # IPropertyStore::GetValue
+_POLICY_SET_DEFAULT = 13   # IPolicyConfig::SetDefaultEndpoint
+DEVICE_ACTIVE = 1
+_FRIENDLY_NAME = ("{A45C254E-DF1C-4EFD-8020-67D146A850E0}", 14)   # PKEY_Device_FriendlyName
+
+
+class _PropKey(ctypes.Structure):
+    _fields_ = [("fmtid", ctypes.c_byte * 16), ("pid", wintypes.DWORD)]
+
+
+def _enumerator() -> ctypes.c_void_p:
+    enum = ctypes.c_void_p()
+    ctypes.windll.ole32.CoCreateInstance(ctypes.byref(GUID(CLSID_MMDeviceEnumerator)), None, CLSCTX_ALL,
+                                         ctypes.byref(GUID(IID_IMMDeviceEnumerator)), ctypes.byref(enum))
+    return enum
+
+
+def _device_id(dev) -> str:
+    p = ctypes.c_wchar_p()
+    _method(dev, _DEVICE_GET_ID, ctypes.POINTER(ctypes.c_wchar_p))(dev, ctypes.byref(p))
+    value = p.value or ""
+    ctypes.windll.ole32.CoTaskMemFree(ctypes.cast(p, ctypes.c_void_p))
+    return value
+
+
+def _device_name(dev) -> str:
+    props = ctypes.c_void_p()
+    _method(dev, _DEVICE_OPEN_PROPS, wintypes.DWORD, ctypes.POINTER(ctypes.c_void_p))(dev, 0, ctypes.byref(props))
+    try:
+        key = _PropKey()
+        ctypes.memmove(key.fmtid, uuid.UUID(_FRIENDLY_NAME[0]).bytes_le, 16)
+        key.pid = _FRIENDLY_NAME[1]
+        pv = (ctypes.c_byte * 24)()    # PROPVARIANT: vt at 0, the string pointer at 8
+        _method(props, _PROPS_GET_VALUE, ctypes.POINTER(_PropKey), ctypes.c_void_p)(props, ctypes.byref(key), pv)
+        try:
+            if ctypes.c_ushort.from_buffer(pv, 0).value == 31:   # VT_LPWSTR
+                return ctypes.c_wchar_p(ctypes.c_void_p.from_buffer(pv, 8).value).value or ""
+            return ""
+        finally:
+            ctypes.windll.ole32.PropVariantClear(pv)
+    finally:
+        _release(props)
+
+
+def list_outputs() -> list[tuple[str, str]]:
+    """The active playback devices as (id, name), in Windows' order."""
+    if sys.platform != "win32":
+        return []
+    out = []
+    enum, coll = _enumerator(), ctypes.c_void_p()
+    try:
+        _method(enum, _ENUM_ENUM_ENDPOINTS, ctypes.c_int, wintypes.DWORD, ctypes.POINTER(ctypes.c_void_p))(
+            enum, E_RENDER, DEVICE_ACTIVE, ctypes.byref(coll))
+        try:
+            n = wintypes.UINT()
+            _method(coll, _COLL_COUNT, ctypes.POINTER(wintypes.UINT))(coll, ctypes.byref(n))
+            for i in range(n.value):
+                dev = ctypes.c_void_p()
+                _method(coll, _COLL_ITEM, wintypes.UINT, ctypes.POINTER(ctypes.c_void_p))(coll, i, ctypes.byref(dev))
+                try:
+                    out.append((_device_id(dev), _device_name(dev)))
+                finally:
+                    _release(dev)
+        finally:
+            _release(coll)
+    finally:
+        _release(enum)
+    return out
+
+
+def default_output_id() -> str:
+    enum, dev = _enumerator(), ctypes.c_void_p()
+    try:
+        _method(enum, _ENUM_GET_DEFAULT, ctypes.c_int, ctypes.c_int, ctypes.POINTER(ctypes.c_void_p))(
+            enum, E_RENDER, E_CONSOLE, ctypes.byref(dev))
+        try:
+            return _device_id(dev)
+        finally:
+            _release(dev)
+    finally:
+        _release(enum)
+
+
+def set_default_output(device_id: str) -> None:
+    """Make this device the default for sound, games and calls (what the Windows sound menu does)."""
+    policy = ctypes.c_void_p()
+    ctypes.windll.ole32.CoCreateInstance(ctypes.byref(GUID(CLSID_PolicyConfigClient)), None, CLSCTX_ALL,
+                                         ctypes.byref(GUID(IID_IPolicyConfig)), ctypes.byref(policy))
+    try:
+        for role in (0, 1, 2):   # console, multimedia, communications
+            _method(policy, _POLICY_SET_DEFAULT, ctypes.c_wchar_p, ctypes.c_int)(policy, device_id, role)
+    finally:
+        _release(policy)
+
+
+def pick_output(devices: list[tuple[str, str]], wanted: str) -> tuple[str, str] | None:
+    """The device whose name is `wanted` (exact first, then a part of the name), or None."""
+    w = wanted.strip().lower()
+    if not w:
+        return None
+    for d in devices:
+        if d[1].lower() == w:
+            return d
+    for d in devices:
+        if w in d[1].lower():
+            return d
+    return None
+
+
+def toggle_output(target: str) -> str | None:
+    """`target` is "Name A | Name B": make the one that is not the default the default.
+    Returns the name now in use, or None when one of the two is not plugged in / switched on."""
+    if sys.platform != "win32":
+        return None
+    parts = [p for p in target.split("|") if p.strip()]
+    if len(parts) != 2:
+        raise ValueError("an output tile needs two device names joined by |")
+    devices = list_outputs()
+    a, b = pick_output(devices, parts[0]), pick_output(devices, parts[1])
+    if a is None or b is None:
+        return None
+    new = b if default_output_id() == a[0] else a
+    set_default_output(new[0])
+    return new[1]
+
+
 def com_thread():
     """Initialiser for the worker thread that makes these calls."""
     if sys.platform == "win32":

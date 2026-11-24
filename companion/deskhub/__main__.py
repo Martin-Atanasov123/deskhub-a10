@@ -157,7 +157,12 @@ class Companion:
             log.warning("[ai] agent = %r is not auto, claude or codex; using auto", self.agent)
             self.agent = "auto"
         self.claude = ClaudeUsage(live=live) if self.agent != "codex" else None
-        self.codex = CodexUsage() if self.agent == "codex" or (
+        codex_live = None
+        if cfg.get("codex", {}).get("live_limits"):
+            from .codex_live import CodexLiveLimits
+            codex_live = CodexLiveLimits()
+            log.info("live Codex limits enabled")
+        self.codex = CodexUsage(live=codex_live) if self.agent == "codex" or (
             self.agent == "auto" and codex_home().is_dir()) else None
         self.claude_msg = None
         ccfg = cfg.get("claude", {})
@@ -443,6 +448,12 @@ class Companion:
                         log.info("shortcut %r: mic", self.tiles[i]["label"])
                         await asyncio.get_running_loop().run_in_executor(self.audio_pool, audio_state.toggle_mic)
                         await self.refresh_lit()
+                        return
+                    if self.tiles[i]["action"] == "output":
+                        used = await asyncio.get_running_loop().run_in_executor(
+                            self.audio_pool, audio_state.toggle_output, self.tiles[i]["target"])
+                        log.info("shortcut %r: output -> %s", self.tiles[i]["label"],
+                                 used or "not switched (a device is missing)")
                         return
                     pending = run_tile(self.tiles[i], self.media)
                     if pending is not None:

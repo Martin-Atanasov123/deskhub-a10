@@ -10,7 +10,7 @@ from .text import ascii_fold
 log = logging.getLogger(__name__)
 
 MAX_TILES = 16
-ACTIONS = {"keys", "run", "open", "media", "volume", "lock", "mic"}
+ACTIONS = {"keys", "run", "open", "media", "volume", "lock", "mic", "output"}
 # Toggle tiles that light up on the board while their Windows state is on.
 STATES = {"mic_mute", "speaker_mute"}
 
@@ -124,8 +124,8 @@ def run_tile(tile: dict, media=None):
     elif action == "volume":
         _tap({"up": "media_volume_up", "down": "media_volume_down",
               "mute": "media_volume_mute"}[target])
-    elif action == "mic":
-        raise RuntimeError("mic tiles run on the audio thread")  # see Companion.handle
+    elif action in ("mic", "output"):
+        raise RuntimeError(f"{action} tiles run on the audio thread")  # see Companion.handle
     elif action == "lock":
         ctypes.windll.user32.LockWorkStation()
     elif action == "media" and media is not None:

@@ -525,7 +525,19 @@
     try { if (sessionStorage.getItem('dh_fsask_seen')) { return; } sessionStorage.setItem('dh_fsask_seen', '1'); } catch (e) { if (S.fsAsked) { return; } S.fsAsked = true; }
     setTimeout(function () { $('fsask').className = 'overlay top on'; }, 1600);
   }
-  $('fsask-go').onclick = function () { $('fsask').className = 'overlay top'; goFullscreen(); };
+  // The always-visible button in the navigation bar: enter fullscreen, or leave it again.
+  function fsSync() {
+    var b = $('fsbtn'), d = document.documentElement, on = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    b.className = (d.requestFullscreen || d.webkitRequestFullscreen) && !inFullscreen() || on ? (on ? 'on' : '') : 'gone';
+    b.firstChild.textContent = on ? 'fullscreen_exit' : 'fullscreen';
+  }
+  $('fsbtn').onclick = function () {
+    if (document.fullscreenElement || document.webkitFullscreenElement) { (document.exitFullscreen || document.webkitExitFullscreen || function () {}).call(document); }
+    else { goFullscreen(); }
+  };
+  document.addEventListener('fullscreenchange', fsSync); document.addEventListener('webkitfullscreenchange', fsSync);
+  fsSync();
+  $('fsask-go').onclick =function () { $('fsask').className = 'overlay top'; goFullscreen(); };
   $('fsask-later').onclick = function () { $('fsask').className = 'overlay top'; };
   $('fsask-never').onclick = function () { save('dh_fsask', '0'); $('fsask').className = 'overlay top'; };
 

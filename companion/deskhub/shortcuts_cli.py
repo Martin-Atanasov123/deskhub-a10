@@ -34,11 +34,12 @@ ACTIONS = {
     "volume": ("volume up, down or mute", "Which", ["up", "down", "mute"]),
     "mic":    ("mute or unmute the microphone in Windows", None, None),
     "lock":   ("lock the PC", None, None),
+    "output": ("switch the sound output between two devices", None, None),
 }
 
 # A first icon for each action (and media/volume target), so most tiles need no choice.
 DEFAULT_ICON = {
-    "keys": "keyboard", "run": "terminal", "open": "folder", "mic": "mic_off", "lock": "lock",
+    "keys": "keyboard", "run": "terminal", "open": "folder", "mic": "mic_off", "lock": "lock", "output": "headphones",
     "media:toggle": "play_arrow", "media:next": "skip_next", "media:prev": "skip_previous",
     "volume:up": "volume_up", "volume:down": "volume_down", "volume:mute": "volume_off",
 }
@@ -104,6 +105,31 @@ def ask_color(default: str) -> str:
         print("  Use six hex digits, for example #3a4256.")
 
 
+def ask_outputs(old_target: str = "") -> str:
+    """Pick the two sound outputs a button switches between; returns "Name A|Name B"."""
+    from . import audio_state
+
+    audio_state.com_thread()
+    devices = [name for _, name in audio_state.list_outputs()]
+    if len(devices) < 2:
+        print("  Windows lists fewer than two active sound outputs right now. Plug in or switch on both, then try again.")
+    else:
+        print("Sound outputs Windows has right now:")
+        for i, name in enumerate(devices, 1):
+            print(f"  {i}. {name}")
+    old = [p.strip() for p in old_target.split("|")] if old_target.count("|") == 1 else ["", ""]
+    chosen = []
+    for which, default in (("first", old[0]), ("second", old[1])):
+        while True:
+            raw = ask(f"The {which} output (number or part of its name)", default)
+            name = devices[int(raw) - 1] if raw.isdigit() and 1 <= int(raw) <= len(devices) else raw
+            if name:
+                chosen.append(name)
+                break
+            print("  This needs a value.")
+    return f"{chosen[0]}|{chosen[1]}"
+
+
 def ask_tile(old=None) -> dict:
     """Questions for one button; `old` gives the defaults when changing one."""
     old = old or {}
@@ -132,6 +158,8 @@ def ask_tile(old=None) -> dict:
             if target in choices:
                 break
             print(f"  Type {', '.join(choices)}.")
+    elif action == "output":
+        target = ask_outputs(old_target)
     elif prompt:
         while True:
             target = ask(prompt, old_target)

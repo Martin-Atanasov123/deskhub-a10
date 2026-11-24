@@ -176,7 +176,7 @@ body[data-nav="bottom"] #link { flex-direction: row; padding: 0 .2rem 0 .5rem; }
   grid-template-columns: repeat(var(--cols, 5), minmax(0, 1fr)); grid-template-rows: repeat(var(--rows, 3), minmax(0, 1fr)); }
 .logo-tile { flex: none; width: 2.7rem; height: 2.7rem; border-radius: .75rem; background: rgba(217, 119, 87, .14); display: flex; align-items: center; justify-content: center; }
 .logo-tile.codex { background: rgba(16, 163, 127, .16); }
-.logo { fill: none; } .logo-claude line { stroke: var(--claude); } .logo-codex rect { stroke: #e9efeb; }
+.logo-claude path { fill: var(--claude); } .logo-codex path { fill: #e9efeb; }
 .logo-tile .logo { width: 1.55rem; height: 1.55rem; }
 
 .w-ai { display: flex; align-items: center; }
@@ -404,6 +404,10 @@ body[data-nav="bottom"] #page-home #top { padding-top: 0; }
   .w-weather .d { font-size: .74rem; margin-top: .1rem; } .w-weather .hl { font-size: .7rem; }
 }
 #fsask .link-row .btn { margin-top: .5rem; }
+#fsbtn { flex: none; width: 2.4rem; height: 2.4rem; border: 0; border-radius: 50%; background: none; color: var(--faint); padding: 0;
+  display: flex; align-items: center; justify-content: center; transition: color .3s, transform .18s var(--soft); }
+#fsbtn .mi { font-size: 1.4rem; } #fsbtn:active { transform: scale(.85); color: var(--amber); } #fsbtn.on { color: var(--text); }
+#fsbtn.gone { display: none; }
 /* Narrow cards (portrait phones): the label and the big number must not run into each other,
    and the play button must not sit on top of the title. */
 .lim-head { flex-wrap: wrap; } .lim-head .cap { min-width: 0; margin-right: .4rem; }

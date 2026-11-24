@@ -141,6 +141,13 @@ show_ip = false
 # whichever you used most recently (Claude Code if neither has been used).
 agent = "auto"
 
+[codex]
+# Opt-in: fetch your current Codex 5-hour and weekly limits from OpenAI every minute,
+# using the sign-in Codex saved on this PC (~/.codex/auth.json). Uses no messages or credits.
+# The endpoint is undocumented and may change. Without it the limits come from Codex's session
+# logs, which only update when you use Codex.
+live_limits = false
+
 [claude]
 # Opt-in: fetch your current 5-hour and weekly limits from Anthropic every minute,
 # using the sign-in Claude Code saved on this PC. Uses no tokens or API credits.
