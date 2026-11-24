@@ -404,6 +404,8 @@ body[data-nav="bottom"] #page-home #top { padding-top: 0; }
   .w-weather .d { font-size: .74rem; margin-top: .1rem; } .w-weather .hl { font-size: .7rem; }
 }
 #fsask .link-row .btn { margin-top: .5rem; }
+.ai-thead { display: flex; align-items: center; justify-content: space-between; margin-bottom: .15rem; }
+.ai-switch .seg-btn { min-width: 0; padding: .3rem .55rem; font-size: .72rem; }
 #fsbtn { flex: none; width: 2.4rem; height: 2.4rem; border: 0; border-radius: 50%; background: none; color: var(--faint); padding: 0;
   display: flex; align-items: center; justify-content: center; transition: color .3s, transform .18s var(--soft); }
 #fsbtn .mi { font-size: 1.4rem; } #fsbtn:active { transform: scale(.85); color: var(--amber); } #fsbtn.on { color: var(--text); }

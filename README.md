@@ -161,7 +161,7 @@ and with nobody connected its loops rest (they wake the moment a display connect
 
 ## Security in short
 
-* Pairing needs the code in the QR address (22 random characters for new installs). Five message types can come back from a phone and nothing else:
+* Pairing needs the code in the QR address (22 random characters for new installs). Six message types can come back from a phone and nothing else (the sixth, `ai_agent`, only picks Auto, Claude or Codex for the AI page):
   the PC looks up what a shortcut does in `config.toml` by its number, so a phone can never send a command line.
 * Wrong codes are blocked after 8 tries a minute per address; pages from other websites cannot connect; the PC's own no-code trust
   applies only to requests that really address `localhost`; pages cannot be framed.

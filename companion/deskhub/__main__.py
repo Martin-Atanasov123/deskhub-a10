@@ -110,7 +110,7 @@ def pick_ai(agent: str, claude: dict | None, codex: dict | None) -> dict:
     else:
         provider = "codex"
     snap = codex if provider == "codex" else claude
-    return {**snap, "type": "ai", "provider": provider}
+    return {**snap, "type": "ai", "provider": provider, "agent": agent}
 
 
 def _steam_key(msg: dict) -> dict:
@@ -156,7 +156,8 @@ class Companion:
         if self.agent not in ("auto", "claude", "codex"):
             log.warning("[ai] agent = %r is not auto, claude or codex; using auto", self.agent)
             self.agent = "auto"
-        self.claude = ClaudeUsage(live=live) if self.agent != "codex" else None
+        # Both agents are read so the phone can switch between them (ai_agent message).
+        self.claude = ClaudeUsage(live=live)
         codex_live = None
         if cfg.get("codex", {}).get("live_limits"):
             from .codex_live import CodexLiveLimits
@@ -436,6 +437,13 @@ class Companion:
                 self.alerts.dismiss(sid)
             elif action == "focus":
                 await asyncio.to_thread(self.alerts.focus, sid)
+        elif kind == "ai_agent":
+            agent = msg.get("agent")
+            if agent in ("auto", "claude", "codex") and (agent != "codex" or self.codex) and agent != self.agent:
+                self.agent = agent
+                log.info("AI page now shows: %s", agent)
+                self.claude_msg = await asyncio.to_thread(self.ai_snapshot)
+                await self.send(self.claude_msg)
         elif kind == "speedtest" and self.net:
             asyncio.create_task(self.speedtest())
         elif kind == "steam_launch" and self.steam:

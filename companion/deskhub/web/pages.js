@@ -163,7 +163,12 @@
     badge: function () { return !!S.alertId; },
     build: function (root) {
       var page = el('div', 'ai-page prov-claude'), top = el('div', 'ai-top');
-      var c5 = limitCard('5-hour limit'), cw = limitCard('Weekly limit'), ct = cardOf('Today'), kvs = el('div', 'kvs'), kv = {};
+      var c5 = limitCard('5-hour limit'), cw = limitCard('Weekly limit'), ct = cardOf(null), kvs = el('div', 'kvs'), kv = {};
+      // Which agent this page shows: the PC's "auto" (whichever was used last), or Claude Code, or Codex.
+      var th = el('div', 'ai-thead'), sw = UI.segmented([['auto', 'Auto'], ['claude', 'Claude'], ['codex', 'Codex']], D.load('dh_agent', '') || 'auto', function (v) {
+        D.save('dh_agent', v); D.send({ type: 'ai_agent', agent: v });
+      });
+      th.appendChild(el('span', 'cap', 'Today')); sw.root.className += ' ai-switch'; th.appendChild(sw.root); ct.appendChild(th);
       ['Tokens', 'Output', 'Messages', 'Last hour'].forEach(function (k) { var r = el('div'); r.appendChild(el('span', null, k)); kv[k] = el('span', null, '-'); r.appendChild(kv[k]); kvs.appendChild(r); });
       ct.appendChild(kvs); UI.loading(ct);
       top.appendChild(c5.card); top.appendChild(cw.card); top.appendChild(ct);
@@ -182,6 +187,7 @@
       P.ai.update = function () {
         var a = S.ai; if (!a) { return; }
         var codex = a.provider === 'codex'; setCls(page, 'ai-page ' + (codex ? 'prov-codex' : 'prov-claude'));
+        sw.setValue(a.agent || 'auto');
         var lim = a.limits || {}, now = Date.now() / 1000, miss = codex ? 'Not reported' : 'Needs the Claude Code status line';
         c5.set(lim.five_hour, lim.five_hour && lim.five_hour.reset ? 'Resets in ' + UI.fmtLeft(lim.five_hour.reset - now) : '', miss);
         cw.set(lim.seven_day, lim.seven_day && lim.seven_day.reset ? resetWeekly(lim.seven_day.reset) : '', ' ');

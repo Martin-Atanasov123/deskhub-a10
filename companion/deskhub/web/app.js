@@ -548,6 +548,7 @@
         S.helloOk = true; retries = 0; denied = false; S.version = m.version || ''; setStatus('online'); sendInfo();
         if (!bootTimer && $('boot').className !== 'gone') { bootTimer = setTimeout(bootHide, 1400); }
         fsAskMaybe();
+        if (load('dh_agent', '')) { send({ type: 'ai_agent', agent: load('dh_agent', '') }); }   // the choice made on this phone
         break;
       case 'hello_denied':
         denied = true; setStatus('denied'); break;

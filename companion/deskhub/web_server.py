@@ -33,7 +33,7 @@ WEB_DIR = pathlib.Path(__file__).resolve().parent / "web"
 TOKEN_FILE = pathlib.Path.home() / ".deskhub" / "web_token"
 
 # Commands a browser may send (the same five the board sends). Anything else is dropped.
-COMMANDS = {"media", "shortcut", "speedtest", "steam_launch", "alert_action"}
+COMMANDS = {"media", "shortcut", "speedtest", "steam_launch", "alert_action", "ai_agent"}
 
 # Minimum seconds between messages of a type, per power mode. Types not listed are
 # change-driven already (events, tiles, layout...) and always go straight out.

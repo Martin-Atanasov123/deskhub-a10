@@ -96,7 +96,7 @@ Not tested (needs a real sign-in, so a restart):
 
 ## 6. Security audit: LAN authentication and remote shortcuts
 
-What was already sound: the pairing code is compared in constant time; a phone can send only five message types (`media`, `shortcut`, `speedtest`, `steam_launch`, `alert_action`) and never a command line (a shortcut is a *number*; the PC looks up what it does in `config.toml`); `steam_launch` only accepts games Steam just reported; message sizes are capped; the web files hold no secrets.
+What was already sound: the pairing code is compared in constant time; a phone can send only six message types (`media`, `shortcut`, `speedtest`, `steam_launch`, `alert_action`, and `ai_agent`, added later: it only picks which agent the AI page shows) and never a command line (a shortcut is a *number*; the PC looks up what it does in `config.toml`); `steam_launch` only accepts games Steam just reported; message sizes are capped; the web files hold no secrets.
 
 Found and fixed:
 
