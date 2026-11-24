@@ -1,6 +1,10 @@
-# DeskHub for the Galaxy A10 (browser display)
+<p align="center"><img src="docs/img/hero.png" alt="DeskHub on a phone: live PC dashboard in landscape and portrait" width="100%"></p>
 
-> **Where this comes from.** This is a fork of **[zacharyinserra/deskhub](https://github.com/zacharyinserra/deskhub)** (MIT), the original Desk Hub project for an ESP32 display board. The Windows companion, the look of the cards and the idea are theirs; this fork adds a browser display for an old Android phone (web server, pairing, power saving, the redesigned UI, the Home editor, the watcher and the tests). The original is not modified or bundled. See [NOTICE](NOTICE) and [LICENSE](LICENSE), and *What changed from upstream* at the bottom.
+# DeskHub for any phone (browser display)
+
+![License: MIT](https://img.shields.io/badge/license-MIT-green) ![Platform: Windows PC](https://img.shields.io/badge/PC-Windows-blue) ![Phone: any browser](https://img.shields.io/badge/phone-any%20modern%20browser-orange) ![No app, no cable, no root](https://img.shields.io/badge/no-app%20%C2%B7%20cable%20%C2%B7%20root-lightgrey)
+
+> **Where this comes from.** This is a fork of **[zacharyinserra/deskhub](https://github.com/zacharyinserra/deskhub)** (MIT), the original Desk Hub project for an ESP32 display board. The Windows companion, the look of the cards and the idea are theirs; this fork adds a browser display for any phone (it was built and tested on a Samsung Galaxy A10) (web server, pairing, power saving, the redesigned UI, the Home editor, the watcher and the tests). The original is not modified or bundled. See [NOTICE](NOTICE) and [LICENSE](LICENSE), and *What changed from upstream* at the bottom.
 >
 > **Where to get this fork:** https://github.com/Martin-Atanasov123/deskhub-a10
 
@@ -14,6 +18,56 @@ uv run python -m deskhub
 ```
 
 You need Windows, [uv](https://docs.astral.sh/uv/) and a phone with a browser on the same Wi-Fi. No cable, app or root. Prefer the original ESP32 board version? Get it from the [upstream repository](https://github.com/zacharyinserra/deskhub).
+
+## Screenshots
+
+Everything below is the real interface with sample data (`/?demo=1`), shown at phone size. Landscape and portrait both work.
+
+| Home | Claude Code | Codex |
+| --- | --- | --- |
+| ![Home](docs/img/home.png) | ![Claude Code usage](docs/img/ai-claude.png) | ![Codex usage](docs/img/ai-codex.png) |
+
+| PC stats | Now playing | Weather |
+| --- | --- | --- |
+| ![PC stats](docs/img/stats.png) | ![Media](docs/img/media.png) | ![Weather](docs/img/weather.png) |
+
+| 3D printer | Games | GitHub |
+| --- | --- | --- |
+| ![Printer](docs/img/printer.png) | ![Games](docs/img/games.png) | ![GitHub](docs/img/github.png) |
+
+| Calendar | Timer | Shortcut keys |
+| --- | --- | --- |
+| ![Calendar](docs/img/calendar.png) | ![Timer](docs/img/timer.png) | ![Keys](docs/img/keys.png) |
+
+**Make Home yours.** Tap the pencil to move, resize, add and remove cards. In portrait the cards stack with arrows.
+
+| Home editor | Settings |
+| --- | --- |
+| ![Home editor](docs/img/home-editor.png) | ![Settings](docs/img/settings.png) |
+
+**Portrait** (any ordinary phone held upright):
+
+<p>
+<img src="docs/img/portrait-home.png" width="23%" alt="Home, portrait">
+<img src="docs/img/portrait-ai.png" width="23%" alt="AI usage, portrait">
+<img src="docs/img/portrait-media.png" width="23%" alt="Now playing, portrait">
+<img src="docs/img/portrait-weather.png" width="23%" alt="Weather, portrait">
+</p>
+
+## Works on any phone
+
+It is a web page, so there is nothing to install on the phone: no app, no cable, no root. Any phone, tablet or e-reader with a modern browser
+and Wi-Fi can show it. The scripts are plain ES5 and the layout adapts to portrait and landscape and to any screen size, so even a very old phone is fine.
+
+| Phone | Status |
+| --- | --- |
+| Samsung Galaxy A10 (Android 11, Chrome) | Built and tested here, including battery and reconnect measurements |
+| Android 15 and 16 (Chrome, emulator) | Loads, pairs and shows live data (checked through the accessibility tree; the emulator's screen capture stayed black) |
+| Other Android phones and tablets | Expected to work. Run the built-in **Compatibility test** to be sure |
+| iPhone / iPad (Safari) | Expected to work. Keeping the screen on and fullscreen differ on iOS (use *Add to Home Screen*) |
+
+Not sure about your phone? Open the pairing address on it and tap **Compatibility test**; it reports the browser, screen and which features work to your PC (`/diag`).
+The PC side needs Windows. Details and limits: [docs/LIMITATIONS.md](docs/LIMITATIONS.md).
 
 It shows the dashboard in a **phone browser over Wi-Fi** instead of on the ESP32 board. No cable, no app, no root.
 
