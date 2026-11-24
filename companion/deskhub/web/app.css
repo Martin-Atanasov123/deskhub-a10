@@ -397,6 +397,20 @@ body[data-nav="bottom"] #page-home #top { padding-top: 0; }
   .cal-ev .when { width: 4.2rem; }
 }
 
+/* Short landscape screens (a phone with the browser's address bar showing): keep the weather card whole. */
+@media (orientation: landscape) and (max-height: 460px) {
+  .w-weather .mi { font-size: 2.6rem; margin-right: .5rem; }
+  .w-weather .t { font-size: 1.8rem; }
+  .w-weather .d { font-size: .74rem; margin-top: .1rem; } .w-weather .hl { font-size: .7rem; }
+}
+#fsask .link-row .btn { margin-top: .5rem; }
+/* Narrow cards (portrait phones): the label and the big number must not run into each other,
+   and the play button must not sit on top of the title. */
+.lim-head { flex-wrap: wrap; } .lim-head .cap { min-width: 0; margin-right: .4rem; }
+.lim-pct { white-space: nowrap; }
+.w-media .grow { min-width: 0; padding-right: 2.7rem; }
+@media (orientation: portrait) { #grid .card.w-media { grid-column: 1 / -1 !important; } }
+
 /* ---------------------------------------------------------------- motion settings */
 .motion-off *, .motion-off *:before, .motion-off *:after { transition: none !important; animation: none !important; }
 .motion-min *, .motion-min *:before, .motion-min *:after { transition-duration: .15s !important; }

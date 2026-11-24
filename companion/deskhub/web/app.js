@@ -511,12 +511,31 @@
   $('alert-focus').onclick = function () { send({ type: 'alert_action', id: S.alertId, action: 'focus' }); };
   $('alert-dismiss').onclick = function () { send({ type: 'alert_action', id: S.alertId, action: 'dismiss' }); $('alertcard').className = ''; S.alertId = ''; updateNav(); };
 
+  // ---------------------------------------------------------------- fullscreen prompt
+  // Asked once per browser session while the page is not fullscreen / installed; "Don't ask again" is remembered.
+  function inFullscreen() {
+    var standalone = false;
+    try { standalone = !!(window.matchMedia && window.matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches); } catch (e) { /* old browser */ }
+    return !!(document.fullscreenElement || document.webkitFullscreenElement || standalone);
+  }
+  function goFullscreen() { var e = document.documentElement; (e.requestFullscreen || e.webkitRequestFullscreen || function () {}).call(e); }
+  function fsAskMaybe() {
+    var d = document.documentElement;
+    if (S.demo || load('dh_fsask', '1') === '0' || inFullscreen() || !(d.requestFullscreen || d.webkitRequestFullscreen)) { return; }
+    try { if (sessionStorage.getItem('dh_fsask_seen')) { return; } sessionStorage.setItem('dh_fsask_seen', '1'); } catch (e) { if (S.fsAsked) { return; } S.fsAsked = true; }
+    setTimeout(function () { $('fsask').className = 'overlay top on'; }, 1600);
+  }
+  $('fsask-go').onclick = function () { $('fsask').className = 'overlay top'; goFullscreen(); };
+  $('fsask-later').onclick = function () { $('fsask').className = 'overlay top'; };
+  $('fsask-never').onclick = function () { save('dh_fsask', '0'); $('fsask').className = 'overlay top'; };
+
   // ---------------------------------------------------------------- messages from the PC
   function onMessage(m) {
     switch (m.type) {
       case 'hello_ok':
         S.helloOk = true; retries = 0; denied = false; S.version = m.version || ''; setStatus('online'); sendInfo();
         if (!bootTimer && $('boot').className !== 'gone') { bootTimer = setTimeout(bootHide, 1400); }
+        fsAskMaybe();
         break;
       case 'hello_denied':
         denied = true; setStatus('denied'); break;
