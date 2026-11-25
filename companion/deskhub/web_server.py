@@ -48,7 +48,7 @@ INTERVALS = {
     "idle": {"stats": 60, "media": 30, "net": 60, "ai": 120, "claude": 120, "printer": 60,
              "github": 300, "steam": 60},
 }
-PAGE_PATHS = ("/", "/compat", "/diag", "/setup", "/ws")
+PAGE_PATHS = ("/", "/compat", "/diag", "/setup", "/ws", "/panel")
 MODES = ("normal", "low", "ultra", "idle")
 # A message goes out at least this often (seconds), so a quiet link is told apart from a dead one.
 HEARTBEAT_S = {"normal": 4, "low": 10, "ultra": 20, "idle": 60}
@@ -182,12 +182,14 @@ def _urgent(kind: str, prev: dict | None, new: dict) -> bool:
 
 class WebHub:
     def __init__(self, *, token: str, snapshot, command, art, host: str = "0.0.0.0", port: int = 8787,
-                 clock=time.monotonic, intervals=None, trust_loopback: bool = True, steam_art=None, on_connect=None):
+                 clock=time.monotonic, intervals=None, trust_loopback: bool = True, steam_art=None, on_connect=None,
+                 panel=None):
         """snapshot(): async, the messages a new client needs. command(dict): async, runs one
         of COMMANDS. art(id): (bytes, content type) or None. steam_art(appid, kind): the same for a
         game cover; it may block (network), so it runs in a thread."""
         self.token, self.snapshot, self.command, self.art = token, snapshot, command, art
         self.steam_art = steam_art
+        self.panel = panel   # panel.Panel: the PC-only control panel (None: not offered)
         self.on_connect = on_connect   # called when a display connects (wakes resting loops)
         self._hello_fails: dict[str, deque] = {}
         self.host, self.port, self.clock = host, port, clock
@@ -213,6 +215,8 @@ class WebHub:
         app.router.add_get("/art/{id}", self._art)
         app.router.add_get("/steam/{appid}/{kind}", self._steam)
         app.router.add_get("/setup", self._setup)
+        if self.panel:
+            self.panel.register(app, self)   # before the static folder, which would answer first
         for path, name in (("/", "index.html"), ("/compat", "compat.html"), ("/diag", "diag.html")):
             app.router.add_get(path, self._page(name))
         if WEB_DIR.is_dir():

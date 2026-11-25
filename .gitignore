@@ -16,3 +16,7 @@ web_token
 *.log
 phone*.png
 ph*_*.png
+
+# PyInstaller output (built by packaging/build.ps1)
+dist/
+build/

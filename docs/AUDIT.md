@@ -122,3 +122,12 @@ Consider replacing the pairing code once: the old one appeared in earlier log li
 ## 7. Original ESP32 compatibility
 
 The board protocol test (`tests/fake_hub.py` against the companion with a `[hub]` section) still passes: layout, home, tiles, events, AI, Steam, covers, stats and media all arrive, with stats and media at the original 1 per second. The only addition for a board is a `weather` message, which the firmware ignores. The new loop pacing never slows a connected board. Not tested on real ESP32 hardware (none here).
+
+## Control panel (DeskHub.exe)
+
+The control panel (`/panel` and `/api/panel/*`) answers only a request that comes from this PC itself under this PC's own name
+(a phone, another address of the PC, or a web page on another site that points a name at 127.0.0.1 gets 403), and every change
+also needs the panel's own Origin and an `X-Panel` header. It can only change what `panel_config.py` validates (pages, navigation,
+weather place, AI agent, live-limit switches, shortcut buttons with the same actions the shortcut CLI offers) and writes it into
+`config.toml` with the old file kept as `config.toml.bak`. `tests/test_panel.py` and `tests/test_panel_config.py` check this.
+The packaged exe is not code-signed (SmartScreen warns once).

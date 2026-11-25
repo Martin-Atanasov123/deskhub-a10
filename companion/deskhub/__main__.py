@@ -64,7 +64,7 @@ LOG_FILE = pathlib.Path.home() / ".deskhub" / "companion.log"
 _instance_mutex = None
 
 
-def single_instance() -> bool:
+def single_instance(name: str = "Local\\DeskHubCompanion") -> bool:
     """True if no other companion runs for this user (a named Windows mutex)."""
     global _instance_mutex
     if sys.platform != "win32":
@@ -73,7 +73,8 @@ def single_instance() -> bool:
 
     kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
     kernel32.CreateMutexW.restype = ctypes.c_void_p
-    _instance_mutex = kernel32.CreateMutexW(None, False, "Local\\DeskHubCompanion")
+    kernel32.CreateMutexW.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_wchar_p]
+    _instance_mutex = kernel32.CreateMutexW(None, False, name)
     return ctypes.get_last_error() != 183  # ERROR_ALREADY_EXISTS
 
 
@@ -146,6 +147,7 @@ class Companion:
         # Core Audio calls need COM, so they run on one dedicated thread.
         self.audio_pool = ThreadPoolExecutor(1, thread_name_prefix="audio", initializer=audio_state.com_thread)
         self.lit_msg = None
+        self.panel = None   # panel.Panel, set by the desktop app before run()
         self.events: list[dict] = []
         live = None
         if cfg.get("claude", {}).get("live_limits"):
@@ -274,6 +276,11 @@ class Companion:
         claude = self.claude.snapshot() if self.claude else None
         codex = self.codex.snapshot() if self.codex else None
         return pick_ai(self.agent, claude, codex)
+
+    async def sound_outputs(self) -> list[str]:
+        """Names of the PC's active playback devices (for the control panel's Output button)."""
+        return await asyncio.get_running_loop().run_in_executor(
+            self.audio_pool, lambda: [name for _, name in audio_state.list_outputs()])
 
     async def tiles_loop(self):
         """Light up toggle tiles (mic and speaker mute) to match Windows."""
@@ -501,7 +508,7 @@ class Companion:
         port = int(wcfg.get("port", 8787))
         self.web = WebHub(token=token, snapshot=self.web_snapshot, command=self.handle, art=self.web_art,
                           steam_art=self.web_steam_art, on_connect=self.pacer.wake,
-                          host=str(wcfg.get("host", "0.0.0.0")), port=port)
+                          host=str(wcfg.get("host", "0.0.0.0")), port=port, panel=self.panel)
         if not await self.web.start():
             self.web = None
             return

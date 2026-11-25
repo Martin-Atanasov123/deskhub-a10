@@ -8,7 +8,21 @@
 >
 > **Where to get this fork:** https://github.com/Martin-Atanasov123/deskhub-a10
 
-## Get it
+## Download the app (Windows)
+
+1. Download **DeskHub.exe** from the [Releases page](https://github.com/Martin-Atanasov123/deskhub-a10/releases) and run it. No installer, Python or uv needed.
+2. A window opens with a **QR code**. On the same Wi-Fi, scan it with your phone's camera and tap the link.
+3. In that window choose what the phone shows: which **pages** and in what order, the **shortcut buttons** (including a sound-output switch), the **weather place**, **Claude Code / Codex** usage, and **Start with Windows**. Press **Save and apply**; the phone follows by itself.
+
+| Pages and QR code | Shortcut buttons |
+| --- | --- |
+| ![Control panel: pages and QR code](docs/img/panel-pages.png) | ![Control panel: buttons](docs/img/panel-buttons.png) |
+
+DeskHub keeps running in the notification area (near the clock) when you close the window; right-click its icon to reopen the window or quit. Its settings are in `%APPDATA%\DeskHub\config.toml`.
+Windows may show a SmartScreen warning because the file is not code-signed (**More info → Run anyway**), and asks once to let DeskHub through the firewall (allow **Private** networks).
+The control panel opens only on the PC itself, never from the phone. The window needs Microsoft Edge or Chrome (Edge is part of Windows).
+
+## Run from source
 
 ```powershell
 git clone https://github.com/Martin-Atanasov123/deskhub-a10.git

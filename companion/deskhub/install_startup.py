@@ -13,7 +13,8 @@ import subprocess
 import sys
 
 COMPANION_DIR = pathlib.Path(__file__).resolve().parents[1]
-LINK_NAME = "Desk Hub companion.lnk"
+# The downloaded app has its own shortcut, apart from the one the source install makes.
+LINK_NAME = "DeskHub.lnk" if getattr(sys, "frozen", False) else "Desk Hub companion.lnk"
 
 
 def startup_dir() -> pathlib.Path:
@@ -37,12 +38,15 @@ def installed() -> bool:
 
 def install(config: pathlib.Path | None = None) -> pathlib.Path:
     """Create (or refresh) the Startup shortcut. Returns its path."""
-    config = (config or COMPANION_DIR / "config.toml").resolve()
     link = link_path()
     link.parent.mkdir(parents=True, exist_ok=True)
+    if getattr(sys, "frozen", False):   # the downloaded DeskHub.exe: it starts itself, quietly, with its own config
+        exe, args, workdir = pathlib.Path(sys.executable), "--background", pathlib.Path(sys.executable).parent
+    else:
+        config = (config or COMPANION_DIR / "config.toml").resolve()
+        exe, args, workdir = pythonw(), f'-m deskhub --tray --config "{config}"', COMPANION_DIR
     # Paths travel in environment variables, so no quoting games in the script.
-    env = {**os.environ, "DH_LINK": str(link), "DH_EXE": str(pythonw()),
-           "DH_ARGS": f'-m deskhub --tray --config "{config}"', "DH_DIR": str(COMPANION_DIR)}
+    env = {**os.environ, "DH_LINK": str(link), "DH_EXE": str(exe), "DH_ARGS": args, "DH_DIR": str(workdir)}
     script = ("$s = (New-Object -ComObject WScript.Shell).CreateShortcut($env:DH_LINK); "
               "$s.TargetPath = $env:DH_EXE; $s.Arguments = $env:DH_ARGS; "
               "$s.WorkingDirectory = $env:DH_DIR; $s.Description = 'Desk Hub companion'; "

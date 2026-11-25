@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>DeskHub</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<style>
+  :root { --bg: #0b0f10; --card: #121a18; --card2: #182220; --line: #25312e; --text: #e8efeb; --muted: #93a39c; --amber: #ffb224;
+          --green: #3ddc97; --red: #ff6b6b; --blue: #6aa9ff; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 "Segoe UI", system-ui, sans-serif; }
+  body { min-height: 100vh; }
+  header { display: flex; align-items: center; gap: 12px; padding: 14px 22px; border-bottom: 1px solid var(--line); }
+  header h1 { font-size: 18px; margin: 0; font-weight: 600; letter-spacing: .02em; }
+  header .ver { color: var(--muted); font-size: 12px; }
+  header .sp { flex: 1; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--faint, #5b6a64); display: inline-block; margin-right: 6px; }
+  .dot.on { background: var(--green); }
+  main { display: grid; grid-template-columns: 330px 1fr; gap: 18px; padding: 18px 22px 90px; max-width: 1100px; margin: 0 auto; }
+  @media (max-width: 800px) { main { grid-template-columns: 1fr; } }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; }
+  .card + .card { margin-top: 14px; }
+  h2 { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin: 0 0 12px; }
+  .qr { background: #fff; border-radius: 12px; padding: 10px; width: 260px; margin: 0 auto 12px; }
+  .qr svg { display: block; width: 100%; height: auto; }
+  .steps { color: var(--muted); font-size: 13px; margin: 0 0 10px; padding-left: 18px; }
+  .addr { display: flex; gap: 6px; }
+  .addr input { flex: 1; min-width: 0; }
+  input, select, button { font: inherit; color: var(--text); }
+  input[type=text], select { background: #0c1311; border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px; }
+  input[type=text]:focus, select:focus { outline: 2px solid var(--amber); outline-offset: -1px; }
+  input[type=color] { width: 38px; height: 32px; border: 1px solid var(--line); border-radius: 8px; background: none; padding: 2px; }
+  button { border: 1px solid var(--line); background: var(--card2); border-radius: 8px; padding: 7px 12px; cursor: pointer; }
+  button:hover { border-color: #3a4a45; }
+  button.primary { background: var(--amber); color: #181308; border: 0; font-weight: 600; }
+  button.icon { padding: 5px 9px; }
+  button:disabled { opacity: .4; cursor: default; }
+  .muted { color: var(--muted); }
+  .small { font-size: 12px; }
+  .phones div { padding: 4px 0; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 14px; border-bottom: 1px solid var(--line); }
+  .tab { background: none; border: 0; border-bottom: 2px solid transparent; border-radius: 0; padding: 9px 14px; color: var(--muted); }
+  .tab.on { color: var(--text); border-bottom-color: var(--amber); }
+  .row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-top: 1px solid var(--line); }
+  .row:first-of-type { border-top: 0; }
+  .row .grow { flex: 1; min-width: 0; }
+  .field { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+  .field label { width: 150px; color: var(--muted); }
+  .field input[type=text] { width: 260px; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
+  .seg button { border: 0; border-radius: 0; background: #0c1311; padding: 7px 14px; color: var(--muted); }
+  .seg button.on { background: var(--amber); color: #181308; font-weight: 600; }
+  .tile { display: grid; grid-template-columns: 24px 1fr; gap: 6px 10px; padding: 10px 0; border-top: 1px solid var(--line); }
+  .tile:first-child { border-top: 0; }
+  .tile .num { color: var(--muted); padding-top: 8px; }
+  .tile .line { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .tile input[type=text] { width: 150px; }
+  .tile .target input[type=text] { width: 260px; }
+  .check { display: inline-flex; gap: 8px; align-items: center; }
+  .note { margin: 10px 0 0; color: var(--muted); font-size: 13px; }
+  .bar { position: fixed; left: 0; right: 0; bottom: 0; background: rgba(11, 15, 16, .94); border-top: 1px solid var(--line);
+         padding: 12px 22px; display: flex; align-items: center; gap: 14px; backdrop-filter: blur(6px); }
+  .bar .msg { flex: 1; color: var(--muted); }
+  .bar .msg.err { color: var(--red); }
+  .bar .msg.ok { color: var(--green); }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<header>
+  <h1>DeskHub</h1><span class="ver" id="ver"></span><span class="sp"></span>
+  <span id="status" class="muted"><span class="dot"></span>starting</span>
+</header>
+<main>
+  <section>
+    <div class="card">
+      <h2>Show it on your phone</h2>
+      <div class="qr" id="qr"></div>
+      <ol class="steps">
+        <li>Put the phone on the same Wi-Fi as this PC.</li>
+        <li>Open the phone's camera and scan the code.</li>
+        <li>Tap the link. In Chrome's menu choose <b>Add to Home screen</b>.</li>
+      </ol>
+      <div class="addr"><input type="text" id="addr" readonly><button id="copy">Copy</button></div>
+      <p class="small muted" style="margin:8px 0 0">The address holds this PC's pairing code. Share it only with your own phone.</p>
+      <details id="others" class="small muted" hidden style="margin-top:8px"><summary style="cursor:pointer">Other addresses of this PC</summary>
+        <div id="otherlist" style="word-break:break-all;margin-top:6px"></div>
+        <div style="margin-top:6px">Try one of these only if the first address does not open on the phone.</div></details>
+    </div>
+    <div class="card">
+      <h2>Phones connected</h2>
+      <div class="phones" id="phones"><span class="muted">None yet.</span></div>
+      <p class="small muted" style="margin:10px 0 0" id="fwhint">Phone cannot open the page? Windows may have asked to let DeskHub through the firewall: allow it on <b>Private</b> networks, and make sure the phone is not on a guest Wi-Fi.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="tabs" id="tabs">
+      <button class="tab on" data-t="pages">Pages</button>
+      <button class="tab" data-t="buttons">Buttons</button>
+      <button class="tab" data-t="ai">AI &amp; Weather</button>
+      <button class="tab" data-t="app">App</button>
+    </div>
+
+    <div class="card" id="t-pages">
+      <h2>Pages on the phone</h2>
+      <div id="pagelist"></div>
+      <div class="field" style="margin-top:16px"><label>Navigation bar</label><div class="seg" id="nav"></div></div>
+      <p class="note">The Home screen's cards are arranged on the phone itself: open Home there and tap the pencil.</p>
+    </div>
+
+    <div class="card" id="t-buttons" hidden>
+      <h2>Shortcut buttons</h2>
+      <div id="tiles"></div>
+      <div style="margin-top:12px"><button id="addtile">Add a button</button> <span class="small muted" id="tilecount"></span></div>
+      <p class="note">These show on the phone's Shortcuts page. 4, 6, 8, 12 or 16 buttons make an even grid.</p>
+    </div>
+
+    <div class="card" id="t-ai" hidden>
+      <h2>AI agent usage</h2>
+      <div class="field"><label>Show</label><div class="seg" id="agent"></div></div>
+      <div class="field"><label>Claude live limits</label><label class="check"><input type="checkbox" id="claudelive"> read my 5-hour and weekly limits from Anthropic</label></div>
+      <div class="field"><label>Codex live limits</label><label class="check"><input type="checkbox" id="codexlive"> read my 5-hour and weekly limits from OpenAI</label></div>
+      <p class="note">Live limits use the sign-in that Claude Code or Codex already saved on this PC. No messages are sent and no tokens are used.</p>
+      <h2 style="margin-top:22px">Weather</h2>
+      <div class="field"><label>Place</label><input type="text" id="city" placeholder="City, or City, Country"></div>
+      <div class="field"><label>Units</label><div class="seg" id="units"></div></div>
+      <p class="note">Leave the place empty to turn the weather off. The place name goes to open-meteo.com for the forecast.</p>
+    </div>
+
+    <div class="card" id="t-app" hidden>
+      <h2>This app</h2>
+      <div class="field"><label>Start with Windows</label><label class="check"><input type="checkbox" id="startup"> open quietly when I sign in</label></div>
+      <p class="note" id="startupnote" hidden></p>
+      <p class="note">DeskHub keeps running in the notification area (near the clock) after you close this window. Right-click its icon to reopen this window or quit.</p>
+    </div>
+  </section>
+</main>
+
+<div class="bar">
+  <span class="msg" id="msg"></span>
+  <button id="revert" disabled>Undo changes</button>
+  <button class="primary" id="save" disabled>Save and apply</button>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var state = null, saved = '', cur = null, outputs = [];
+
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) { e.className = cls; } if (text != null) { e.textContent = text; } return e; }
+  function api(path, body) {
+    var opt = body === undefined ? {} : { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Panel': '1' }, body: JSON.stringify(body) };
+    return fetch(path, opt).then(function (r) { return r.json().then(function (j) { j.status = r.status; return j; }); });
+  }
+  function dirty() { return JSON.stringify(cur) !== saved; }
+  function touch() {
+    $('save').disabled = !dirty(); $('revert').disabled = !dirty();
+    if (dirty()) { say('Unsaved changes', ''); } else if ($('msg').className.indexOf('ok') < 0) { say('', ''); }
+  }
+  function say(text, cls) { $('msg').textContent = text; $('msg').className = 'msg ' + (cls || ''); }
+
+  function seg(root, options, value, onPick) {
+    root.textContent = '';
+    options.forEach(function (o) {
+      var b = el('button', o[0] === value ? 'on' : '', o[1]);
+      b.onclick = function () { onPick(o[0]); seg(root, options, o[0], onPick); touch(); };
+      root.appendChild(b);
+    });
+  }
+  function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+  // ------------------------------------------------------------ left column
+  function drawLeft() {
+    $('qr').innerHTML = state.pair.qr;   // an SVG this PC's own server made
+    $('addr').value = state.pair.url;
+    var o = $('others'), key = state.pair.others.join('\n'); o.hidden = !state.pair.others.length;
+    if (o.getAttribute('data-k') !== key) {   // redrawn only when it changes, so an opened list stays open
+      o.setAttribute('data-k', key); var ol = $('otherlist'); ol.textContent = '';
+      state.pair.others.forEach(function (u) { ol.appendChild(el('div', '', u)); });
+    }
+    var ph = $('phones'); ph.textContent = '';
+    if (!state.phones.length) { ph.appendChild(el('span', 'muted', 'None yet.')); }
+    state.phones.forEach(function (p) {
+      var d = el('div'); d.appendChild(el('span', 'dot on')); d.appendChild(document.createTextNode(p.ip + '  '));
+      d.appendChild(el('span', 'small muted', 'for ' + Math.max(1, Math.round(p.seconds / 60)) + ' min'));
+      ph.appendChild(d);
+    });
+    $('status').innerHTML = '<span class="dot on"></span>running';
+    $('ver').textContent = state.version ? 'v' + state.version : '';
+    $('fwhint').hidden = state.phones.length > 0;
+  }
+  $('copy').onclick = function () {
+    var a = $('addr'); a.select();
+    (navigator.clipboard ? navigator.clipboard.writeText(a.value) : Promise.reject()).then(function () { say('Address copied', 'ok'); }, function () { document.execCommand('copy'); say('Address copied', 'ok'); });
+  };
+
+  // ------------------------------------------------------------ pages
+  function drawPages() {
+    var m = state.meta, en = cur.pages.enabled.filter(function (p) { return p !== 'home'; });
+    var order = en.concat(m.pages.map(function (p) { return p.id; }).filter(function (id) { return en.indexOf(id) < 0; }));
+    var label = {}; m.pages.forEach(function (p) { label[p.id] = p.label; });
+    var box = $('pagelist'); box.textContent = '';
+    var home = el('div', 'row'); home.appendChild(el('span', 'grow', 'Home')); home.appendChild(el('span', 'small muted', 'always shown')); box.appendChild(home);
+    order.forEach(function (id, i) {
+      var on = en.indexOf(id) >= 0, row = el('div', 'row'), cb = document.createElement('input');
+      cb.type = 'checkbox'; cb.checked = on;
+      cb.onchange = function () { var k = en.indexOf(id); if (cb.checked && k < 0) { en.push(id); } else if (!cb.checked && k >= 0) { en.splice(k, 1); } setPages(en); };
+      row.appendChild(cb); row.appendChild(el('span', 'grow', label[id]));
+      var up = el('button', 'icon', '↑'), dn = el('button', 'icon', '↓');
+      up.disabled = !on || en.indexOf(id) === 0; dn.disabled = !on || en.indexOf(id) === en.length - 1;
+      up.onclick = function () { var k = en.indexOf(id); en.splice(k - 1, 0, en.splice(k, 1)[0]); setPages(en); };
+      dn.onclick = function () { var k = en.indexOf(id); en.splice(k + 1, 0, en.splice(k, 1)[0]); setPages(en); };
+      row.appendChild(up); row.appendChild(dn); box.appendChild(row);
+    });
+    seg($('nav'), m.navs.map(function (n) { return [n, cap(n)]; }), cur.pages.nav, function (v) { cur.pages.nav = v; });
+  }
+  function setPages(list) { cur.pages.enabled = ['home'].concat(list); drawPages(); touch(); }
+
+  // ------------------------------------------------------------ buttons
+  var targetCache = {};
+  function drawTiles() {
+    var m = state.meta, box = $('tiles'); box.textContent = '';
+    cur.tiles.forEach(function (t, i) {
+      var tile = el('div', 'tile'), line = el('div', 'line'), line2 = el('div', 'line target');
+      tile.appendChild(el('div', 'num', String(i + 1)));
+      var body = el('div');
+      var label = el('input'); label.type = 'text'; label.value = t.label; label.maxLength = 30; label.placeholder = 'Label';
+      label.oninput = function () { t.label = label.value; touch(); };
+      var act = el('select'); Object.keys(m.actions).forEach(function (a) { var o = el('option', '', m.actions[a].what); o.value = a; if (a === t.action) { o.selected = true; } act.appendChild(o); });
+      act.onchange = function () { t.action = act.value; t.target = defaultTarget(t.action); drawTiles(); touch(); };
+      var icon = el('select'); m.icons.forEach(function (n) { var o = el('option', '', n.replace(/_/g, ' ')); o.value = n; if (n === t.icon) { o.selected = true; } icon.appendChild(o); });
+      icon.onchange = function () { t.icon = icon.value; touch(); };
+      var color = el('input'); color.type = 'color'; color.value = t.color; color.oninput = function () { t.color = color.value; touch(); };
+      var up = el('button', 'icon', '↑'), dn = el('button', 'icon', '↓'), rm = el('button', 'icon', '✕');
+      up.disabled = i === 0; dn.disabled = i === cur.tiles.length - 1;
+      up.onclick = function () { cur.tiles.splice(i - 1, 0, cur.tiles.splice(i, 1)[0]); drawTiles(); touch(); };
+      dn.onclick = function () { cur.tiles.splice(i + 1, 0, cur.tiles.splice(i, 1)[0]); drawTiles(); touch(); };
+      rm.onclick = function () { cur.tiles.splice(i, 1); drawTiles(); touch(); };
+      [label, act, icon, color, up, dn, rm].forEach(function (x) { line.appendChild(x); });
+      body.appendChild(line);
+      drawTarget(line2, t); if (line2.firstChild) { body.appendChild(line2); }
+      tile.appendChild(body); box.appendChild(tile);
+    });
+    $('addtile').disabled = cur.tiles.length >= m.max_tiles;
+    $('tilecount').textContent = cur.tiles.length + ' of ' + m.max_tiles;
+  }
+  function defaultTarget(action) {
+    var c = state.meta.actions[action].choices;
+    if (c) { return c[0]; }
+    if (action === 'output') { return outputs.length > 1 ? outputs[0] + '|' + outputs[1] : ''; }
+    return '';
+  }
+  function drawTarget(line, t) {
+    var a = state.meta.actions[t.action];
+    if (a.choices) {
+      var s = el('select'); a.choices.forEach(function (c) { var o = el('option', '', c); o.value = c; if (c === t.target) { o.selected = true; } s.appendChild(o); });
+      s.onchange = function () { t.target = s.value; touch(); }; line.appendChild(el('span', 'muted small', a.hint + ':')); line.appendChild(s);
+    } else if (t.action === 'output') {
+      var parts = t.target.split('|'), pick = function (k) {
+        var s = el('select'), names = outputs.slice();
+        if (parts[k] && names.indexOf(parts[k]) < 0) { names.unshift(parts[k]); }
+        var blank = el('option', '', 'Choose a sound output'); blank.value = ''; s.appendChild(blank);
+        names.forEach(function (n) { var o = el('option', '', n); o.value = n; if (n === parts[k]) { o.selected = true; } s.appendChild(o); });
+        s.onchange = function () { parts[k] = s.value; t.target = (parts[0] || '') + '|' + (parts[1] || ''); touch(); };
+        return s;
+      };
+      parts = [parts[0] || '', parts[1] || ''];
+      line.appendChild(el('span', 'muted small', 'Switch between:')); line.appendChild(pick(0)); line.appendChild(el('span', 'muted', '⇄')); line.appendChild(pick(1));
+      if (outputs.length < 2) { line.appendChild(el('span', 'small muted', 'Windows lists fewer than two outputs right now.')); }
+    } else if (a.hint) {
+      var i = el('input'); i.type = 'text'; i.value = t.target; i.placeholder = a.hint; i.oninput = function () { t.target = i.value; touch(); };
+      line.appendChild(i);
+    }
+  }
+  $('addtile').onclick = function () {
+    if (cur.tiles.length >= state.meta.max_tiles) { return; }
+    cur.tiles.push({ label: 'New button', icon: 'apps', color: '#3a4256', action: 'keys', target: '' }); drawTiles(); touch();
+  };
+
+  // ------------------------------------------------------------ ai, weather, app
+  function drawAi() {
+    var m = state.meta;
+    seg($('agent'), m.agents.map(function (a) { return [a, a === 'auto' ? 'Auto (last used)' : a === 'claude' ? 'Claude Code' : 'Codex']; }), cur.ai.agent, function (v) { cur.ai.agent = v; });
+    $('claudelive').checked = cur.claude.live_limits; $('claudelive').onchange = function () { cur.claude.live_limits = this.checked; touch(); };
+    $('codexlive').checked = cur.codex.live_limits; $('codexlive').onchange = function () { cur.codex.live_limits = this.checked; touch(); };
+    $('city').value = cur.weather.city; $('city').oninput = function () { cur.weather.city = this.value; touch(); };
+    seg($('units'), m.units.map(function (u) { return [u, u === 'metric' ? 'Metric (°C)' : 'Imperial (°F)']; }), cur.weather.units, function (v) { cur.weather.units = v; });
+  }
+  function drawApp() {
+    var s = $('startup'); s.checked = state.startup; s.disabled = false;
+    s.onchange = function () {
+      var want = s.checked; s.disabled = true;
+      api('/api/panel/startup', { enabled: want }).then(function (r) {
+        s.disabled = false; s.checked = !!r.enabled; $('startupnote').hidden = !!r.ok;
+        if (!r.ok) { $('startupnote').hidden = false; $('startupnote').textContent = 'Could not change it: ' + (r.error || ''); }
+      });
+    };
+  }
+
+  // ------------------------------------------------------------ tabs, save
+  Array.prototype.forEach.call(document.querySelectorAll('.tab'), function (b) {
+    b.onclick = function () {
+      Array.prototype.forEach.call(document.querySelectorAll('.tab'), function (x) { x.className = 'tab' + (x === b ? ' on' : ''); $('t-' + x.getAttribute('data-t')).hidden = x !== b; });
+    };
+  });
+  $('revert').onclick = function () { cur = JSON.parse(saved); drawAll(); touch(); say('', ''); };
+  $('save').onclick = function () {
+    $('save').disabled = true; say('Saving…', '');
+    api('/api/panel/save', cur).then(function (r) {
+      if (!r.ok) { say(r.error || 'Could not save', 'err'); $('save').disabled = false; return; }
+      say('Saved. Applying…', 'ok');
+      api('/api/panel/restart', {}).then(function () { waitBack(0); });
+    }, function () { say('Could not reach DeskHub', 'err'); $('save').disabled = false; });
+  };
+  function waitBack(n) {
+    setTimeout(function () {
+      fetch('/api/panel/state').then(function (r) { return r.json(); }).then(function (j) {
+        if (n < 2) { return waitBack(n + 1); }   // the old process may still answer once
+        init(j); say('Applied. The phone picks the changes up by itself.', 'ok');
+      }, function () { if (n < 40) { waitBack(n + 1); } else { say('DeskHub did not come back. Start it again from the Start menu.', 'err'); } });
+    }, 1000);
+  }
+
+  function drawAll() { drawLeft(); drawPages(); drawTiles(); drawAi(); drawApp(); }
+  function init(j) {
+    state = j; outputs = j.outputs || []; cur = JSON.parse(JSON.stringify(j.settings)); saved = JSON.stringify(cur);
+    drawAll(); touch();
+  }
+  function refreshLeft() {
+    fetch('/api/panel/state').then(function (r) { return r.json(); }).then(function (j) { state.phones = j.phones; state.pair = j.pair; drawLeft(); }, function () { $('status').innerHTML = '<span class="dot"></span>not running'; });
+  }
+  fetch('/api/panel/state').then(function (r) { return r.json(); }).then(init, function () { say('Cannot reach DeskHub', 'err'); });
+  setInterval(refreshLeft, 5000);
+})();
+</script>
+</body>
+</html>

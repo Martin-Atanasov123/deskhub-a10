@@ -63,11 +63,15 @@ class Tray:
     MENU = [(1, "Edit config"), (2, "Run setup"), (3, "Restart"), (4, "Open log"), (None, None), (5, "Quit")]
 
     def __init__(self, config_path: pathlib.Path, log_file: pathlib.Path | None,
-                 on_restart: Callable[[], None], on_quit: Callable[[], None]):
+                 on_restart: Callable[[], None], on_quit: Callable[[], None],
+                 on_open: Callable[[], None] | None = None):
         self.config_path = config_path
         self.log_file = log_file
         self.on_restart = on_restart
         self.on_quit = on_quit
+        self.on_open = on_open   # the desktop app: "Open DeskHub" opens its control panel
+        if on_open:
+            self.MENU = [(6, "Open DeskHub"), (3, "Restart"), (4, "Open log"), (None, None), (5, "Quit")]
         self.hwnd = None
         self.connected = False
         self.tip = "Desk Hub: starting"
@@ -149,6 +153,8 @@ class Tray:
             elif cmd == 5:
                 self.remove()
                 self.on_quit()
+            elif cmd == 6 and self.on_open:
+                self.on_open()
         except Exception as e:
             log.warning("tray command failed: %s", e)
 
@@ -158,7 +164,7 @@ class Tray:
             if event in (WM_RBUTTONUP, WM_CONTEXTMENU):
                 self._menu()
             elif event == WM_LBUTTONDBLCLK:
-                self._command(1)
+                self._command(6 if self.on_open else 1)
             return 0
         if msg == self._taskbar_created:
             self._notify(NIM_ADD)  # Explorer restarted: put the icon back
